@@ -1,0 +1,3 @@
+0.1.2
+-added serializer deserializer methods to ms2_spectra
+-added type conversion for ILine properties
