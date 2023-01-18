@@ -530,7 +530,7 @@ def from_dta_select_filter(file_input: str | _io.TextIOWrapper, version: DtaSele
             if line_elements[0] == '' or '*' in line_elements[0] or line_elements[0].isnumeric():
                 peptide_lines.append(_deserialize_peptide_line(line, version))
             else:
-                if protein_lines:
+                if protein_lines and peptide_lines:
                     dta_filter_results.append(DTAFilterResult(protein_lines=protein_lines, peptide_lines=peptide_lines))
                     peptide_lines, protein_lines = [], []
                 protein_lines.append(_deserialize_protein_line(line, version))

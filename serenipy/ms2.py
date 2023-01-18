@@ -157,9 +157,9 @@ def _serialize_ms2_spectra(ms2_spectra: Ms2Spectra) -> str:
 
 
 def _deserialize_ms2_spectra(spectra_str: str | list[str], include_spectra=True) -> Ms2Spectra:
-    if type(spectra_str) is str:
+    if isinstance(spectra_str, str):
         lines = spectra_str.split('\n')
-    elif type(spectra_str) is list:
+    elif isinstance(spectra_str, list):
         lines = spectra_str
     else:
         raise ValueError(f'Unsupported spectra_str type: {type(spectra_str)}!')
@@ -168,20 +168,20 @@ def _deserialize_ms2_spectra(spectra_str: str | list[str], include_spectra=True)
     info, mz_spectra, intensity_spectra, charge_spectra = {}, [], [], []
 
     for line in lines:
-        if line[0] == 'S':
-            line_elems = line.rstrip().split('\t')
+        if line.startswith('S'):
+            line_elems = line.strip().split('\t')
             low_scan = int(line_elems[1])
             high_scan = int(line_elems[2])
             mz = float(line_elems[3])
-        elif line[0] == 'Z':
-            line_elems = line.rstrip().split('\t')
+        elif line.startswith('Z'):
+            line_elems = line.strip().split('\t')
             charge = int(line_elems[1])
             mass = float(line_elems[2])
-        elif line[0] == 'I':
-            line_elems = line.rstrip().split('\t')
+        elif line.startswith('I'):
+            line_elems = line.strip().split('\t')
             info[line_elems[1]] = '\t'.join(line_elems[2:])
         elif line[0].isnumeric() and include_spectra:
-            line_elems = line.rstrip().split(' ')
+            line_elems = line.strip().split(' ')
             mz_spectra.append(float(line_elems[0]))
             intensity_spectra.append(float(line_elems[1]))
             if len(line_elems) == 3:
