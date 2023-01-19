@@ -4,6 +4,7 @@ import _io
 import multiprocessing
 from dataclasses import dataclass
 from enum import Enum
+from io import TextIOWrapper, StringIO
 from queue import Empty
 from typing import Any, Union
 
@@ -212,13 +213,11 @@ def ms2_spectra_consumer(queue, return_dict):
     print('Consumer: Stopping')
 
 
-def from_ms2(ms2_input: str | _io.TextIOWrapper, include_spectra=True, processes=1) -> (list[str], list[Ms2Spectra]):
+def from_ms2(ms2_input: str | TextIOWrapper | StringIO, include_spectra=True, processes=1) -> (list[str], list[Ms2Spectra]):
     if type(ms2_input) is str:
         lines = ms2_input.split('\n')
-
-    elif type(ms2_input) is _io.TextIOWrapper:
+    elif type(ms2_input) is TextIOWrapper or type(ms2_input) is StringIO:
         lines = ms2_input
-
     else:
         raise ValueError(f'Unsupported input type: {type(ms2_input)}!')
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import _io
+from io import StringIO, TextIOWrapper
 from dataclasses import dataclass, field
 from enum import Enum, auto
 
@@ -337,11 +337,10 @@ def determine_sqt_version(s_line: str) -> SqtVersion:
     else:
         raise ValueError(f'Cannot parse version from s_line: {s_line}!')
 
-
-def from_sqt(sqt_input: str | _io.TextIOWrapper) -> (SqtVersion, list[str], list[SLine]):
+def from_sqt(sqt_input: str | TextIOWrapper | StringIO) -> (SqtVersion, list[str], list[SLine]):
     if type(sqt_input) is str:
         lines = sqt_input.split('\n')
-    elif type(sqt_input) is _io.TextIOWrapper:
+    elif type(sqt_input) is TextIOWrapper or type(sqt_input) is StringIO:
         lines = sqt_input
     else:
         raise ValueError(f'Unsupported input type: {type(sqt_input)}!')

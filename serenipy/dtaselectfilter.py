@@ -3,6 +3,7 @@ from __future__ import annotations
 import _io
 from dataclasses import dataclass
 from enum import Enum, auto
+from io import StringIO, TextIOWrapper
 
 from .utils import serialize_val, deserialize_val
 
@@ -487,10 +488,10 @@ def determine_dta_select_filter_version(peptide_line_header) -> DtaSelectFilterV
         raise ValueError(f'Cannot parse version from peptide header: {peptide_line_header}!')
 
 
-def from_dta_select_filter(file_input: str | _io.TextIOWrapper, version: DtaSelectFilterVersion = None) -> (DtaSelectFilterVersion, [str], [DTAFilterResult], [str]):
+def from_dta_select_filter(file_input: str | TextIOWrapper | StringIO, version: DtaSelectFilterVersion = None) -> (DtaSelectFilterVersion, [str], [DTAFilterResult], [str]):
     if type(file_input) is str:
         lines = file_input.split('\n')
-    elif type(file_input) is _io.TextIOWrapper:
+    elif type(file_input) is TextIOWrapper or type(file_input) is StringIO:
         lines = file_input
     else:
         raise ValueError(f'Unsupported input type: {type(file_input)}!')

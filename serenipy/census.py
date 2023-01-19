@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import _io
 from dataclasses import dataclass
-from io import StringIO
+from io import StringIO, TextIOWrapper
 
 from .utils import deserialize_val
 
@@ -121,11 +121,11 @@ def from_census(census_input: str | _io.TextIOWrapper) -> (list[str], list[Censu
     return header_lines, census_lines
 
 
-def to_df(census_input: str | _io.TextIOWrapper):
+def to_df(census_input: str | TextIOWrapper | StringIO):
     import pandas as pd
     if type(census_input) is str:
         lines = census_input.split('\n')
-    elif type(census_input) is _io.TextIOWrapper:
+    elif type(census_input) is TextIOWrapper or type(census_input) is StringIO:
         lines = census_input
     else:
         raise ValueError(f'Unsupported input type: {type(census_input)}!')
