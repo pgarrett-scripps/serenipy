@@ -1,7 +1,7 @@
-from typing import Callable
+from typing import Callable, Any
 
 
-def serialize_val(val: any, precision=None):
+def serialize_val(val: Any, precision=None):
     if val is None:
         return 'NA'
     if precision is None:

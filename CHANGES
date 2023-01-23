@@ -3,3 +3,5 @@
 -added type conversion for ILine properties
 0.1.3
 fixed dtafilter multiline protein bug
+0.1.4
+changed typing from _io.TextIOWrapper to TextIOWrapper | StringIO (this will better support streamlit/file input)

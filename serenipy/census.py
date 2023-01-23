@@ -1,8 +1,6 @@
-from __future__ import annotations
-
-import _io
 from dataclasses import dataclass
 from io import StringIO, TextIOWrapper
+from typing import Union, List
 
 from .utils import deserialize_val
 
@@ -15,27 +13,27 @@ def apply_transformation(val, t):
 
 @dataclass
 class ExperimentLine:
-    num: int | None
-    sequence: str | None
-    file_name: str | None
-    scan: int | None
-    cstate: int | None
-    intensity: float | None
-    corrioninjection_intensity: int | None
-    profile_score: float | None
-    mhplus: float | None
-    calc_mhplus: float | None
-    total_intensity: float | None
-    xcorr: float | None
-    delta_cn: float | None
-    dmass: float | None
-    sprank: int | None
-    sp_score: float | None
-    redundancy: int | None
-    start_range: float | None
-    end_range: float | None
-    retention_time: float | None
-    ion_injection_time: float | None
+    num: Union[int, None]
+    sequence: Union[str, None]
+    file_name: Union[str, None]
+    scan: Union[int, None]
+    cstate: Union[int, None]
+    intensity: Union[float, None]
+    corrioninjection_intensity: Union[int, None]
+    profile_score: Union[float, None]
+    mhplus: Union[float, None]
+    calc_mhplus: Union[float, None]
+    total_intensity: Union[float, None]
+    xcorr: Union[float, None]
+    delta_cn: Union[float, None]
+    dmass: Union[float, None]
+    sprank: Union[int, None]
+    sp_score: Union[float, None]
+    redundancy: Union[int, None]
+    start_range: Union[float, None]
+    end_range: Union[float, None]
+    retention_time: Union[float, None]
+    ion_injection_time: Union[float, None]
 
 
 def _deserialize_experiment_line(line_elems: list[str]) -> ExperimentLine:
@@ -66,16 +64,16 @@ def _deserialize_experiment_line(line_elems: list[str]) -> ExperimentLine:
 
 @dataclass
 class CensusLine:
-    norm_intensities: list
-    pvalue: float | None
-    qvalue: float | None
-    protein: str | None
-    protein_description: str | None
+    norm_intensities: List[float]
+    pvalue: Union[float, None]
+    qvalue: Union[float, None]
+    protein: Union[str, None]
+    protein_description: Union[str, None]
 
-    experiment_lines: list[ExperimentLine]
+    experiment_lines: List[ExperimentLine]
 
 
-def _deserialize_census_line(line: str, census_columns: list[str]) -> CensusLine:
+def _deserialize_census_line(line: str, census_columns: List[str]) -> CensusLine:
     line_elems = line.rstrip().split('\t')
     experiment_lines_strs = []
     for i, col_name in enumerate(census_columns):
@@ -97,10 +95,10 @@ def _deserialize_census_line(line: str, census_columns: list[str]) -> CensusLine
                       experiment_lines=experiment_lines)
 
 
-def from_census(census_input: str | _io.TextIOWrapper) -> (list[str], list[CensusLine]):
+def from_census(census_input: Union[str, TextIOWrapper, StringIO]) -> (List[str], List[CensusLine]):
     if type(census_input) is str:
         lines = census_input.split('\n')
-    elif type(census_input) is _io.TextIOWrapper:
+    elif type(census_input) is TextIOWrapper or type(census_input) == StringIO:
         lines = census_input
     else:
         raise ValueError(f'Unsupported input type: {type(census_input)}!')
@@ -121,7 +119,7 @@ def from_census(census_input: str | _io.TextIOWrapper) -> (list[str], list[Censu
     return header_lines, census_lines
 
 
-def to_df(census_input: str | TextIOWrapper | StringIO):
+def to_df(census_input: Union[str, TextIOWrapper, StringIO]):
     import pandas as pd
     if type(census_input) is str:
         lines = census_input.split('\n')

@@ -1,9 +1,7 @@
-from __future__ import annotations
-
-import _io
 from dataclasses import dataclass
 from enum import Enum, auto
 from io import StringIO, TextIOWrapper
+from typing import Union, List
 
 from .utils import serialize_val, deserialize_val
 
@@ -17,51 +15,51 @@ class DtaSelectFilterVersion(Enum):
 
 @dataclass(slots=True)
 class PeptideLine:
-    unique: str | None
-    file_name: str | None
-    x_corr: float | None
-    delta_cn: float | None
-    conf: float | None
-    mass_plus_hydrogen: float | None
-    calc_mass_plus_hydrogen: float | None
-    ppm: float | None
-    total_intensity: float | None
-    spr: int | None
-    ion_proportion: float | None
-    redundancy: int | None
-    sequence: str | None
-    prob_score: float | None
-    pi: float | None
-    measured_im_value: float | None
-    predicted_im_value: float | None
-    im_score: float | None
-    ret_time: float | None
-    ptm_index: str | None
-    ptm_index_protein_list: str | None
-    experimental_mz: float | None
-    corrected_1k0: float | None
-    ion_mobility: float | None
+    unique: Union[str, None]
+    file_name: Union[str, None]
+    x_corr: Union[float, None]
+    delta_cn: Union[float, None]
+    conf: Union[float, None]
+    mass_plus_hydrogen: Union[float, None]
+    calc_mass_plus_hydrogen: Union[float, None]
+    ppm: Union[float, None]
+    total_intensity: Union[float, None]
+    spr: Union[int, None]
+    ion_proportion: Union[float, None]
+    redundancy: Union[int, None]
+    sequence: Union[str, None]
+    prob_score: Union[float, None]
+    pi: Union[float, None]
+    measured_im_value: Union[float, None]
+    predicted_im_value: Union[float, None]
+    im_score: Union[float, None]
+    ret_time: Union[float, None]
+    ptm_index: Union[str, None]
+    ptm_index_protein_list: Union[str, None]
+    experimental_mz: Union[float, None]
+    corrected_1k0: Union[float, None]
+    ion_mobility: Union[float, None]
 
     @property
-    def file_path(self) -> str | None:
+    def file_path(self) -> Union[str, None]:
         if self.file_name:
             return str(self.file_name.split('.')[0])
         return None
 
     @property
-    def low_scan(self) -> int | None:
+    def low_scan(self) -> Union[int, None]:
         if self.file_name:
             return int(self.file_name.split('.')[1])
         return None
 
     @property
-    def high_scan(self) -> int | None:
+    def high_scan(self) -> Union[int, None]:
         if self.file_name:
             return int(self.file_name.split('.')[2])
         return None
 
     @property
-    def charge(self) -> int | None:
+    def charge(self) -> Union[int, None]:
         if self.file_name:
             return int(self.file_name.split('.')[3])
         return None
@@ -89,89 +87,89 @@ peptide_line_V2_1_13_timscore_template = '{unique}\t{file_name}\t{x_corr}\t{delt
 def _serialize_peptide_line(line: PeptideLine, version: DtaSelectFilterVersion) -> str:
     if version == DtaSelectFilterVersion.V2_1_12:
         return peptide_line_V2_1_12_template.format(
-                           unique=serialize_val(line.unique),
-                           file_name=serialize_val(line.file_name),
-                           x_corr=serialize_val(line.x_corr, 4),
-                           delta_cn=serialize_val(line.delta_cn, 4),
-                           conf=serialize_val(line.conf, 1),
-                           mass_plus_hydrogen=serialize_val(line.mass_plus_hydrogen, 5),
-                           calc_mass_plus_hydrogen=serialize_val(line.calc_mass_plus_hydrogen, 5),
-                           total_intensity=serialize_val(line.total_intensity),
-                           spr=serialize_val(line.spr),
-                           prob_score=serialize_val(line.prob_score),
-                           ion_proportion=serialize_val(line.ion_proportion),
-                           redundancy=serialize_val(line.redundancy),
-                           sequence=serialize_val(line.sequence),
-                           )
+            unique=serialize_val(line.unique),
+            file_name=serialize_val(line.file_name),
+            x_corr=serialize_val(line.x_corr, 4),
+            delta_cn=serialize_val(line.delta_cn, 4),
+            conf=serialize_val(line.conf, 1),
+            mass_plus_hydrogen=serialize_val(line.mass_plus_hydrogen, 5),
+            calc_mass_plus_hydrogen=serialize_val(line.calc_mass_plus_hydrogen, 5),
+            total_intensity=serialize_val(line.total_intensity),
+            spr=serialize_val(line.spr),
+            prob_score=serialize_val(line.prob_score),
+            ion_proportion=serialize_val(line.ion_proportion),
+            redundancy=serialize_val(line.redundancy),
+            sequence=serialize_val(line.sequence),
+        )
     elif version == DtaSelectFilterVersion.V2_1_12_paser:
         return peptide_line_V2_1_12_paser_template.format(
-                           unique=serialize_val(line.unique),
-                           file_name=serialize_val(line.file_name),
-                           x_corr=serialize_val(line.x_corr, 4),
-                           delta_cn=serialize_val(line.delta_cn, 4),
-                           conf=serialize_val(line.conf, 1),
-                           mass_plus_hydrogen=serialize_val(line.mass_plus_hydrogen, 5),
-                           calc_mass_plus_hydrogen=serialize_val(line.calc_mass_plus_hydrogen, 5),
-                           ppm=serialize_val(line.ppm, 1),
-                           total_intensity=serialize_val(line.total_intensity, 1),
-                           spr=serialize_val(line.spr),
-                           prob_score=serialize_val(line.prob_score, 7),
-                           pi=serialize_val(line.pi, 2),
-                           ion_proportion=serialize_val(line.ion_proportion, 2),
-                           redundancy=serialize_val(line.redundancy),
-                           sequence=serialize_val(line.sequence),
-                           ret_time=serialize_val(line.ret_time, 4),
-                           ptm_index=serialize_val(line.ptm_index),
-                           ptm_index_protein_list=serialize_val(line.ptm_index_protein_list),
-                           )
+            unique=serialize_val(line.unique),
+            file_name=serialize_val(line.file_name),
+            x_corr=serialize_val(line.x_corr, 4),
+            delta_cn=serialize_val(line.delta_cn, 4),
+            conf=serialize_val(line.conf, 1),
+            mass_plus_hydrogen=serialize_val(line.mass_plus_hydrogen, 5),
+            calc_mass_plus_hydrogen=serialize_val(line.calc_mass_plus_hydrogen, 5),
+            ppm=serialize_val(line.ppm, 1),
+            total_intensity=serialize_val(line.total_intensity, 1),
+            spr=serialize_val(line.spr),
+            prob_score=serialize_val(line.prob_score, 7),
+            pi=serialize_val(line.pi, 2),
+            ion_proportion=serialize_val(line.ion_proportion, 2),
+            redundancy=serialize_val(line.redundancy),
+            sequence=serialize_val(line.sequence),
+            ret_time=serialize_val(line.ret_time, 4),
+            ptm_index=serialize_val(line.ptm_index),
+            ptm_index_protein_list=serialize_val(line.ptm_index_protein_list),
+        )
     elif version == DtaSelectFilterVersion.V2_1_13:
         return peptide_line_V2_1_13_template.format(
-                           unique=serialize_val(line.unique),
-                           file_name=serialize_val(line.file_name),
-                           x_corr=serialize_val(line.x_corr, 4),
-                           delta_cn=serialize_val(line.delta_cn, 4),
-                           conf=serialize_val(line.conf, 14),
-                           mass_plus_hydrogen=serialize_val(line.mass_plus_hydrogen, 5),
-                           calc_mass_plus_hydrogen=serialize_val(line.calc_mass_plus_hydrogen, 5),
-                           ppm=serialize_val(line.ppm, 1),
-                           total_intensity=serialize_val(line.total_intensity, 1),
-                           spr=serialize_val(line.spr),
-                           prob_score=serialize_val(line.prob_score, 3),
-                           pi=serialize_val(line.pi, 2),
-                           ion_proportion=serialize_val(line.ion_proportion, 1),
-                           redundancy=serialize_val(line.redundancy),
-                           measured_im_value=serialize_val(line.measured_im_value, 4),
-                           predicted_im_value=serialize_val(line.predicted_im_value, 16),
-                           im_score=serialize_val(line.im_score, 4),
-                           sequence=serialize_val(line.sequence),
-                           )
+            unique=serialize_val(line.unique),
+            file_name=serialize_val(line.file_name),
+            x_corr=serialize_val(line.x_corr, 4),
+            delta_cn=serialize_val(line.delta_cn, 4),
+            conf=serialize_val(line.conf, 14),
+            mass_plus_hydrogen=serialize_val(line.mass_plus_hydrogen, 5),
+            calc_mass_plus_hydrogen=serialize_val(line.calc_mass_plus_hydrogen, 5),
+            ppm=serialize_val(line.ppm, 1),
+            total_intensity=serialize_val(line.total_intensity, 1),
+            spr=serialize_val(line.spr),
+            prob_score=serialize_val(line.prob_score, 3),
+            pi=serialize_val(line.pi, 2),
+            ion_proportion=serialize_val(line.ion_proportion, 1),
+            redundancy=serialize_val(line.redundancy),
+            measured_im_value=serialize_val(line.measured_im_value, 4),
+            predicted_im_value=serialize_val(line.predicted_im_value, 16),
+            im_score=serialize_val(line.im_score, 4),
+            sequence=serialize_val(line.sequence),
+        )
     elif version == DtaSelectFilterVersion.V2_1_13_timscore:
         return peptide_line_V2_1_13_timscore_template.format(
-                           unique=serialize_val(line.unique),
-                           file_name=serialize_val(line.file_name),
-                           x_corr=serialize_val(line.x_corr),
-                           delta_cn=serialize_val(line.delta_cn),
-                           conf=serialize_val(line.conf),
-                           mass_plus_hydrogen=serialize_val(line.mass_plus_hydrogen),
-                           calc_mass_plus_hydrogen=serialize_val(line.calc_mass_plus_hydrogen),
-                           ppm=serialize_val(line.ppm),
-                           total_intensity=serialize_val(line.total_intensity),
-                           spr=serialize_val(line.spr),
-                           prob_score=serialize_val(line.prob_score),
-                           pi=serialize_val(line.pi),
-                           ion_proportion=serialize_val(line.ion_proportion),
-                           redundancy=serialize_val(line.redundancy),
-                           measured_im_value=serialize_val(line.measured_im_value),
-                           predicted_im_value=serialize_val(line.predicted_im_value),
-                           im_score=serialize_val(line.im_score),
-                           sequence=serialize_val(line.sequence),
-                           experimental_mz=serialize_val(line.experimental_mz),
-                           corrected_1k0=serialize_val(line.corrected_1k0),
-                           ion_mobility=serialize_val(line.ion_mobility),
-                           ret_time=serialize_val(line.ret_time),
-                           ptm_index=serialize_val(line.ptm_index),
-                           ptm_index_protein_list=serialize_val(line.ptm_index_protein_list),
-                           )
+            unique=serialize_val(line.unique),
+            file_name=serialize_val(line.file_name),
+            x_corr=serialize_val(line.x_corr),
+            delta_cn=serialize_val(line.delta_cn),
+            conf=serialize_val(line.conf),
+            mass_plus_hydrogen=serialize_val(line.mass_plus_hydrogen),
+            calc_mass_plus_hydrogen=serialize_val(line.calc_mass_plus_hydrogen),
+            ppm=serialize_val(line.ppm),
+            total_intensity=serialize_val(line.total_intensity),
+            spr=serialize_val(line.spr),
+            prob_score=serialize_val(line.prob_score),
+            pi=serialize_val(line.pi),
+            ion_proportion=serialize_val(line.ion_proportion),
+            redundancy=serialize_val(line.redundancy),
+            measured_im_value=serialize_val(line.measured_im_value),
+            predicted_im_value=serialize_val(line.predicted_im_value),
+            im_score=serialize_val(line.im_score),
+            sequence=serialize_val(line.sequence),
+            experimental_mz=serialize_val(line.experimental_mz),
+            corrected_1k0=serialize_val(line.corrected_1k0),
+            ion_mobility=serialize_val(line.ion_mobility),
+            ret_time=serialize_val(line.ret_time),
+            ptm_index=serialize_val(line.ptm_index),
+            ptm_index_protein_list=serialize_val(line.ptm_index_protein_list),
+        )
     else:
         raise ValueError(f'Unsupported DtaSelectFilter Version: {version}!')
 
@@ -293,21 +291,20 @@ def _deserialize_peptide_line(line: str, version: DtaSelectFilterVersion) -> Pep
 
 @dataclass(slots=True)
 class ProteinLine:
-
-    locus_name: str | None
-    sequence_count: int | None
-    spectrum_count: int | None
-    sequence_coverage: float | None
-    length: int | None
-    molWt: int | None
-    pi: float | None
-    validation_status: str | None
-    nsaf: float | None
-    empai: float | None
-    description_name: str | None
-    h_redundancy: int | None
-    l_redundancy: int | None
-    m_redundancy: int | None
+    locus_name: Union[str, None]
+    sequence_count: Union[int, None]
+    spectrum_count: Union[int, None]
+    sequence_coverage: Union[float, None]
+    length: Union[int, None]
+    molWt: Union[int, None]
+    pi: Union[float, None]
+    validation_status: Union[str, None]
+    nsaf: Union[float, None]
+    empai: Union[float, None]
+    description_name: Union[str, None]
+    h_redundancy: Union[int, None]
+    l_redundancy: Union[int, None]
+    m_redundancy: Union[int, None]
 
 
 protein_line_V2_1_12_template = '{locus_name}\t{sequence_count}\t{spectrum_count}\t{sequence_coverage}' \
@@ -465,8 +462,8 @@ def _deserialize_protein_line(line: str, version: DtaSelectFilterVersion) -> Pro
 
 @dataclass
 class DTAFilterResult:
-    protein_lines: list[ProteinLine]
-    peptide_lines: list[PeptideLine]
+    protein_lines: List[ProteinLine]
+    peptide_lines: List[PeptideLine]
 
     def serialize(self, version):
         protein_line_strings = [_serialize_protein_line(line, version) for line in self.protein_lines]
@@ -478,7 +475,7 @@ def determine_dta_select_filter_version(peptide_line_header) -> DtaSelectFilterV
     line_elems = peptide_line_header.rstrip().split('\t')
     if len(line_elems) == 24:
         return DtaSelectFilterVersion.V2_1_13_timscore
-    elif len(line_elems) == 18 and line_elems[-1] =='Sequence':
+    elif len(line_elems) == 18 and line_elems[-1] == 'Sequence':
         return DtaSelectFilterVersion.V2_1_13
     elif len(line_elems) == 18:
         return DtaSelectFilterVersion.V2_1_12_paser
@@ -488,7 +485,8 @@ def determine_dta_select_filter_version(peptide_line_header) -> DtaSelectFilterV
         raise ValueError(f'Cannot parse version from peptide header: {peptide_line_header}!')
 
 
-def from_dta_select_filter(file_input: str | TextIOWrapper | StringIO, version: DtaSelectFilterVersion = None) -> (DtaSelectFilterVersion, [str], [DTAFilterResult], [str]):
+def from_dta_select_filter(file_input: Union[str , TextIOWrapper , StringIO], version: DtaSelectFilterVersion = None)\
+        -> (DtaSelectFilterVersion, List[str], List[DTAFilterResult], List[str]):
     if type(file_input) is str:
         lines = file_input.split('\n')
     elif type(file_input) is TextIOWrapper or type(file_input) is StringIO:
@@ -542,7 +540,8 @@ def from_dta_select_filter(file_input: str | TextIOWrapper | StringIO, version: 
     return version, h_lines, dta_filter_results, end_lines
 
 
-def to_dta_select_filter(version: DtaSelectFilterVersion, h_lines: [str], dta_filter_results: [DTAFilterResult], end_lines: [str]) -> str:
+def to_dta_select_filter(version: DtaSelectFilterVersion, h_lines: List[str], dta_filter_results: List[DTAFilterResult],
+                         end_lines: List[str]) -> str:
     lines = []
     for h_line in h_lines:
         if h_line.endswith('\n'):

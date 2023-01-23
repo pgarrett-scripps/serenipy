@@ -1,8 +1,7 @@
-from __future__ import annotations
-
 from io import StringIO, TextIOWrapper
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from typing import List, Union
 
 from .utils import serialize_val, deserialize_val
 
@@ -71,22 +70,22 @@ def _serialize_l_line(line: LLine, sqt_version: SqtVersion) -> str:
 
 @dataclass
 class MLine:
-    xcorr_rank: int | None
-    sp_rank: int | None
-    calculated_mass: float | None
-    delta_cn: float | None
-    xcorr: float | None
-    sp: float | None
-    matched_ions: int | None
-    expected_ions: int | None
-    sequence: str | None
-    validation_status: str | None
-    predicted_ook0: float | None
-    tims_score: float | None
-    tims_b_score_m2: float | None
-    tims_b_score_best_m: float | None
+    xcorr_rank: Union[int, None]
+    sp_rank: Union[int, None]
+    calculated_mass: Union[float, None]
+    delta_cn: Union[float, None]
+    xcorr: Union[float, None]
+    sp: Union[float, None]
+    matched_ions: Union[int, None]
+    expected_ions: Union[int, None]
+    sequence: Union[str, None]
+    validation_status: Union[str, None]
+    predicted_ook0: Union[float, None]
+    tims_score: Union[float, None]
+    tims_b_score_m2: Union[float, None]
+    tims_b_score_best_m: Union[float, None]
 
-    l_lines: list[LLine] = field(default_factory=list)
+    l_lines: List[LLine] = field(default_factory=list)
 
 
 m_line_V1_4_0_template = 'M\t{xcorr_rank}\t{sp_rank}\t{calculated_mass}\t{delta_cn}\t{xcorr}\t{sp}\t{matched_ions}' \
@@ -207,20 +206,20 @@ def _serialize_m_line(line: MLine, sqt_version: SqtVersion) -> str:
 
 @dataclass
 class SLine:
-    low_scan: int | None
-    high_scan: int | None
-    charge: int | None
-    process_time: int | None
-    server: str | None
-    experimental_mass: float | None
-    total_ion_intensity: float | None
-    lowest_sp: float | None
-    number_matches: int | None
-    experimental_ook0: float | None
-    experimental_mz: float | None
-    corrected_ook0: float | None
+    low_scan: Union[int, None]
+    high_scan: Union[int, None]
+    charge: Union[int, None]
+    process_time: Union[int, None]
+    server: Union[str, None]
+    experimental_mass: Union[float, None]
+    total_ion_intensity: Union[float, None]
+    lowest_sp: Union[float, None]
+    number_matches: Union[int, None]
+    experimental_ook0: Union[float, None]
+    experimental_mz: Union[float, None]
+    corrected_ook0: Union[float, None]
 
-    m_lines: list[MLine] = field(default_factory=list)
+    m_lines: List[MLine] = field(default_factory=list)
 
 
 s_line_V1_4_0_template = 'S\t{low_scan}\t{high_scan}\t{charge}\t{process_time}\t{server}\t{experimental_mass}' \
@@ -337,7 +336,8 @@ def determine_sqt_version(s_line: str) -> SqtVersion:
     else:
         raise ValueError(f'Cannot parse version from s_line: {s_line}!')
 
-def from_sqt(sqt_input: str | TextIOWrapper | StringIO) -> (SqtVersion, list[str], list[SLine]):
+
+def from_sqt(sqt_input: Union[str, TextIOWrapper, StringIO]) -> (SqtVersion, List[str], List[SLine]):
     if type(sqt_input) is str:
         lines = sqt_input.split('\n')
     elif type(sqt_input) is TextIOWrapper or type(sqt_input) is StringIO:
@@ -366,7 +366,7 @@ def from_sqt(sqt_input: str | TextIOWrapper | StringIO) -> (SqtVersion, list[str
     return version, h_lines, s_lines
 
 
-def to_sqt(version: SqtVersion, h_lines: [str], s_lines: [SLine]) -> str:
+def to_sqt(version: SqtVersion, h_lines: List[str], s_lines: List[SLine]) -> str:
     lines = []
     for h_line in h_lines:
         if h_line.endswith('\n'):
