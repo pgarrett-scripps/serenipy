@@ -13,7 +13,7 @@ class DtaSelectFilterVersion(Enum):
     V2_1_13_timscore = auto()
 
 
-@dataclass(slots=True)
+@dataclass
 class PeptideLine:
     unique: Union[str, None]
     file_name: Union[str, None]
@@ -289,14 +289,14 @@ def _deserialize_peptide_line(line: str, version: DtaSelectFilterVersion) -> Pep
         raise ValueError(f'Unsupported DtaSelectFilter Version: {version}!')
 
 
-@dataclass(slots=True)
+@dataclass
 class ProteinLine:
     locus_name: Union[str, None]
     sequence_count: Union[int, None]
     spectrum_count: Union[int, None]
     sequence_coverage: Union[float, None]
     length: Union[int, None]
-    molWt: Union[int, None]
+    molWt: Union[float, None]
     pi: Union[float, None]
     validation_status: Union[str, None]
     nsaf: Union[float, None]
@@ -395,7 +395,7 @@ def _deserialize_protein_line(line: str, version: DtaSelectFilterVersion) -> Pro
             spectrum_count=deserialize_val(line_elems[2], int),
             sequence_coverage=deserialize_val(line_elems[3], lambda x: float(x.rstrip("%"))),
             length=deserialize_val(line_elems[4], int),
-            molWt=deserialize_val(line_elems[5], int),
+            molWt=deserialize_val(line_elems[5], float),
             pi=deserialize_val(line_elems[6], float),
             validation_status=deserialize_val(line_elems[7], str),
             nsaf=deserialize_val(line_elems[8], float),
@@ -412,7 +412,7 @@ def _deserialize_protein_line(line: str, version: DtaSelectFilterVersion) -> Pro
             spectrum_count=deserialize_val(line_elems[2], int),
             sequence_coverage=deserialize_val(line_elems[3], lambda x: float(x.rstrip("%"))),
             length=deserialize_val(line_elems[4], int),
-            molWt=deserialize_val(line_elems[5], int),
+            molWt=deserialize_val(line_elems[5], float),
             pi=deserialize_val(line_elems[6], float),
             validation_status=deserialize_val(line_elems[7], str),
             nsaf=deserialize_val(line_elems[8], float),
@@ -429,7 +429,7 @@ def _deserialize_protein_line(line: str, version: DtaSelectFilterVersion) -> Pro
             spectrum_count=deserialize_val(line_elems[2], int),
             sequence_coverage=deserialize_val(line_elems[3], lambda x: float(x.rstrip("%"))),
             length=deserialize_val(line_elems[4], int),
-            molWt=deserialize_val(line_elems[5], int),
+            molWt=deserialize_val(line_elems[5], float),
             pi=deserialize_val(line_elems[6], float),
             validation_status=deserialize_val(line_elems[7], str),
             nsaf=deserialize_val(line_elems[8], float),
@@ -446,7 +446,7 @@ def _deserialize_protein_line(line: str, version: DtaSelectFilterVersion) -> Pro
             spectrum_count=deserialize_val(line_elems[2], int),
             sequence_coverage=deserialize_val(line_elems[3], lambda x: float(x.rstrip("%"))),
             length=deserialize_val(line_elems[4], int),
-            molWt=deserialize_val(line_elems[5], int),
+            molWt=deserialize_val(line_elems[5], float),
             pi=deserialize_val(line_elems[6], float),
             validation_status=deserialize_val(line_elems[7], str),
             nsaf=deserialize_val(line_elems[8], float),

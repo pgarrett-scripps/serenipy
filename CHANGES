@@ -5,3 +5,5 @@
 fixed dtafilter multiline protein bug
 0.1.4
 changed typing from _io.TextIOWrapper to TextIOWrapper | StringIO (this will better support streamlit/file input)
+0.2.2
+removed slots

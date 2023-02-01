@@ -30,7 +30,7 @@ class ILineKeywords(Enum):
     MZ_SPECTRA_KEYWORD = 'MZ_Spectra'
 
 
-@dataclass(slots=True)
+@dataclass
 class Ms2Spectra:
     low_scan: int
     high_scan: int

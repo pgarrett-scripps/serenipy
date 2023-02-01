@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import List
 
 
-@dataclass(slots=True)
+@dataclass
 class IdxInfo:
     precursorMass: float
     seqOffset: int
