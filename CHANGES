@@ -7,3 +7,8 @@ fixed dtafilter multiline protein bug
 changed typing from _io.TextIOWrapper to TextIOWrapper | StringIO (this will better support streamlit/file input)
 0.2.2
 removed slots
+0.2.3
+added filter method to FilterResults and associated tests
+initialized all attributes of PeptideLine and ProteinLine to None
+0.2.4
+updated filter to compare a tuple (conf, xcorr)

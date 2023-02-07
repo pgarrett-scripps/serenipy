@@ -1,12 +1,11 @@
 import unittest
 
-from serenipy.dtaselectfilter import from_dta_select_filter, to_dta_select_filter
+from serenipy.dtaselectfilter import from_dta_select_filter, to_dta_select_filter, DTAFilterResult, PeptideLine
 
 
 class TestDtaSelectFilter(unittest.TestCase):
 
     def test_to_from_dta_select_filter_V2_1_13(self):
-
         with open('data/DTASelect-filter_V2_1_13.txt', 'r') as file:
             version, head_lines, dta_select_filter_results, tail_lines = from_dta_select_filter(file)
 
@@ -176,3 +175,24 @@ class TestDtaSelectFilter(unittest.TestCase):
         self.assertEqual(dta_select_filter_results[0].peptide_lines[0].ret_time, 0.7797)
         self.assertEqual(dta_select_filter_results[0].peptide_lines[0].ptm_index, None)
         self.assertEqual(dta_select_filter_results[0].peptide_lines[0].ptm_index_protein_list, None)
+
+    def test_dtafilter_filter(self):
+        peptides_lines = [
+            PeptideLine(file_name='file.1.1.2', sequence='PEPTIDE', conf=.9, x_corr=1),
+            PeptideLine(file_name='file.1.1.2', sequence='PEPTIDE', conf=.8, x_corr=1),
+            PeptideLine(file_name='file.1.1.4', sequence='PEPTIDE', conf=.7, x_corr=1),
+            PeptideLine(file_name='file.1.1.4', sequence='PEPTIDES', conf=.7, x_corr=1),
+
+        ]
+
+        result = DTAFilterResult(protein_lines=None,
+                                 peptide_lines=peptides_lines)
+
+        result.filter(level=0)
+        self.assertEqual(4, len(result.peptide_lines))
+
+        result.filter(level=1)
+        self.assertEqual(3, len(result.peptide_lines))
+
+        result.filter(level=2)
+        self.assertEqual(2, len(result.peptide_lines))

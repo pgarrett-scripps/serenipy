@@ -15,30 +15,30 @@ class DtaSelectFilterVersion(Enum):
 
 @dataclass
 class PeptideLine:
-    unique: Union[str, None]
-    file_name: Union[str, None]
-    x_corr: Union[float, None]
-    delta_cn: Union[float, None]
-    conf: Union[float, None]
-    mass_plus_hydrogen: Union[float, None]
-    calc_mass_plus_hydrogen: Union[float, None]
-    ppm: Union[float, None]
-    total_intensity: Union[float, None]
-    spr: Union[int, None]
-    ion_proportion: Union[float, None]
-    redundancy: Union[int, None]
-    sequence: Union[str, None]
-    prob_score: Union[float, None]
-    pi: Union[float, None]
-    measured_im_value: Union[float, None]
-    predicted_im_value: Union[float, None]
-    im_score: Union[float, None]
-    ret_time: Union[float, None]
-    ptm_index: Union[str, None]
-    ptm_index_protein_list: Union[str, None]
-    experimental_mz: Union[float, None]
-    corrected_1k0: Union[float, None]
-    ion_mobility: Union[float, None]
+    unique: Union[str, None] = None
+    file_name: Union[str, None] = None
+    x_corr: Union[float, None] = None
+    delta_cn: Union[float, None] = None
+    conf: Union[float, None] = None
+    mass_plus_hydrogen: Union[float, None] = None
+    calc_mass_plus_hydrogen: Union[float, None] = None
+    ppm: Union[float, None] = None
+    total_intensity: Union[float, None] = None
+    spr: Union[int, None] = None
+    ion_proportion: Union[float, None] = None
+    redundancy: Union[int, None] = None
+    sequence: Union[str, None] = None
+    prob_score: Union[float, None] = None
+    pi: Union[float, None] = None
+    measured_im_value: Union[float, None] = None
+    predicted_im_value: Union[float, None] = None
+    im_score: Union[float, None] = None
+    ret_time: Union[float, None] = None
+    ptm_index: Union[str, None] = None
+    ptm_index_protein_list: Union[str, None] = None
+    experimental_mz: Union[float, None] = None
+    corrected_1k0: Union[float, None] = None
+    ion_mobility: Union[float, None] = None
 
     @property
     def file_path(self) -> Union[str, None]:
@@ -291,20 +291,20 @@ def _deserialize_peptide_line(line: str, version: DtaSelectFilterVersion) -> Pep
 
 @dataclass
 class ProteinLine:
-    locus_name: Union[str, None]
-    sequence_count: Union[int, None]
-    spectrum_count: Union[int, None]
-    sequence_coverage: Union[float, None]
-    length: Union[int, None]
-    molWt: Union[float, None]
-    pi: Union[float, None]
-    validation_status: Union[str, None]
-    nsaf: Union[float, None]
-    empai: Union[float, None]
-    description_name: Union[str, None]
-    h_redundancy: Union[int, None]
-    l_redundancy: Union[int, None]
-    m_redundancy: Union[int, None]
+    locus_name: Union[str, None] = None
+    sequence_count: Union[int, None] = None
+    spectrum_count: Union[int, None] = None
+    sequence_coverage: Union[float, None] = None
+    length: Union[int, None] = None
+    molWt: Union[float, None] = None
+    pi: Union[float, None] = None
+    validation_status: Union[str, None] = None
+    nsaf: Union[float, None] = None
+    empai: Union[float, None] = None
+    description_name: Union[str, None] = None
+    h_redundancy: Union[int, None] = None
+    l_redundancy: Union[int, None] = None
+    m_redundancy: Union[int, None] = None
 
 
 protein_line_V2_1_12_template = '{locus_name}\t{sequence_count}\t{spectrum_count}\t{sequence_coverage}' \
@@ -470,6 +470,30 @@ class DTAFilterResult:
         peptide_line_strings = [_serialize_peptide_line(line, version) for line in self.peptide_lines]
         return ''.join(protein_line_strings + peptide_line_strings)
 
+    def filter(self, level: int) -> None:
+        self.peptide_lines.sort(key=lambda x: (x.conf, x.x_corr), reverse=True)
+        if level == 0:
+            pass
+        elif level == 1:
+            seen = set()
+            filtered_peptide_lines = []
+            for peptide_line in self.peptide_lines:
+                key = (peptide_line.sequence, peptide_line.charge)
+                if key not in seen:
+                    filtered_peptide_lines.append(peptide_line)
+                    seen.add(key)
+            self.peptide_lines = filtered_peptide_lines
+        elif level == 2:
+            seen = set()
+            filtered_peptide_lines = []
+            for peptide_line in self.peptide_lines:
+                key = peptide_line.sequence
+                if key not in seen:
+                    filtered_peptide_lines.append(peptide_line)
+                    seen.add(key)
+            self.peptide_lines = filtered_peptide_lines
+        else:
+            raise ValueError('Level: {level} not valid. Supported levels: [0,1,2]')
 
 def determine_dta_select_filter_version(peptide_line_header) -> DtaSelectFilterVersion:
     line_elems = peptide_line_header.rstrip().split('\t')
