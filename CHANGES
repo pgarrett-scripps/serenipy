@@ -14,3 +14,5 @@ initialized all attributes of PeptideLine and ProteinLine to None
 updated dtaselectfilter filter to compare a tuple of scores (conf, xcorr)
 0.2.5
 added robin_random version to sqt parser
+0.2.6
+added to/from dataframe functionality to DTASelectFilter files
