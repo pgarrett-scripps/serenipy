@@ -153,3 +153,11 @@ class TestSqt(unittest.TestCase):
 
         sqt_str = to_sqt(sqt_version, h_lines, s_lines)
         sqt_version, h_lines, s_lines = from_sqt(sqt_str)
+
+    def test_load_sqt_v2_1_0_robin_random(self):
+
+        with open('data/sqt_V2_1_0_robin_random.sqt', 'r') as file:
+            sqt_version, h_lines, s_lines = from_sqt(file)
+
+        sqt_str = to_sqt(sqt_version, h_lines, s_lines)
+        sqt_version, h_lines, s_lines = from_sqt(sqt_str)

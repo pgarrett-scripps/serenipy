@@ -1,7 +1,10 @@
-from dataclasses import dataclass
+from collections import ChainMap
+from dataclasses import dataclass, asdict
 from enum import Enum, auto
 from io import StringIO, TextIOWrapper
 from typing import Union, List
+
+import pandas as pd
 
 from .utils import serialize_val, deserialize_val
 
@@ -495,6 +498,104 @@ class DTAFilterResult:
         else:
             raise ValueError('Level: {level} not valid. Supported levels: [0,1,2]')
 
+
+def results_to_df(results: List[DTAFilterResult]) -> pd.DataFrame:
+    data = []
+    for i, result in enumerate(results):
+        protein_grp = ' '.join(sorted([protein_line.locus_name for protein_line in result.protein_lines]))
+        for protein_line in result.protein_lines:
+            for peptide_line in result.peptide_lines:
+                protein_dict = asdict(protein_line)
+                protein_pi = protein_dict.pop('pi')
+                protein_dict['protein_pi'] = protein_pi
+                protein_dict['protein_group'] = protein_grp
+
+                peptide_dict = asdict(peptide_line)
+                peptide_dict['low_scan'] = peptide_line.low_scan
+                peptide_dict['high_scan'] = peptide_line.high_scan
+                peptide_dict['file_path'] = peptide_line.file_path
+                peptide_dict['charge'] = peptide_line.charge
+                peptide_dict.pop('file_name')
+
+                d = ChainMap(peptide_dict, protein_dict)
+                data.append(d)
+    return pd.DataFrame(data)
+
+def results_from_df(df: pd.DataFrame) -> List[DTAFilterResult]:
+    grp_to_peptide_lines = {}
+    grp_to_protein_lines = {}
+    for i, row in df.iterrows():
+        protein_line = ProteinLine(locus_name=row.get('locus_name'),
+                                   sequence_count=row.get('sequence_count'),
+                                   spectrum_count=row.get('spectrum_count'),
+                                   sequence_coverage=row.get('sequence_coverage'),
+                                   length=row.get('length'),
+                                   molWt=row.get('molWt'),
+                                   pi=row.get('protein_pi'),
+                                   validation_status=row.get('validation_status'),
+                                   nsaf=row.get('nsaf'),
+                                   empai=row.get('empai'),
+                                   description_name=row.get('description_name'),
+                                   h_redundancy=row.get('h_redundancy'),
+                                   l_redundancy=row.get('l_redundancy'),
+                                   m_redundancy=row.get('m_redundancy'))
+        file_name = '.'.join([row.get('file_path'), str(row.get('low_scan')), str(row.get('high_scan')), str(row.get('charge'))])
+        peptide_line = PeptideLine(unique=row.get('unique'),
+                                   file_name=file_name,
+                                   x_corr=row.get('x_corr'),
+                                   delta_cn=row.get('delta_cn'),
+                                   conf=row.get('conf'),
+                                   mass_plus_hydrogen=row.get('mass_plus_hydrogen'),
+                                   calc_mass_plus_hydrogen=row.get('calc_mass_plus_hydrogen'),
+                                   ppm=row.get('ppm'),
+                                   total_intensity=row.get('total_intensity'),
+                                   spr=row.get('spr'),
+                                   ion_proportion=row.get('ion_proportion'),
+                                   redundancy=row.get('redundancy'),
+                                   sequence=row.get('sequence'),
+                                   prob_score=row.get('prob_score'),
+                                   pi=row.get('pi'),
+                                   measured_im_value=row.get('measured_im_value'),
+                                   predicted_im_value=row.get('predicted_im_value'),
+                                   im_score=row.get('im_score'),
+                                   ret_time=row.get('ret_time'),
+                                   ptm_index=row.get('ptm_index'),
+                                   ptm_index_protein_list=row.get('ptm_index_protein_list'),
+                                   experimental_mz=row.get('experimental_mz'),
+                                   corrected_1k0=row.get('corrected_1k0'),
+                                   ion_mobility=row.get('ion_mobility')
+                                   )
+        grp_to_peptide_lines.setdefault(row.get('protein_group'), {}).setdefault(peptide_line.file_name, peptide_line)
+        grp_to_protein_lines.setdefault(row.get('protein_group'), {}).setdefault(protein_line.locus_name, protein_line)
+
+    results = []
+    for grp in grp_to_peptide_lines:
+        result = DTAFilterResult(protein_lines=list(grp_to_protein_lines[grp].values()),
+                                 peptide_lines=list(grp_to_peptide_lines[grp].values()))
+        results.append(result)
+    return results
+
+
+def results_to_protein_df(protein_lines: List[ProteinLine]):
+    data = []
+    for protein_line in protein_lines:
+        data.append(asdict(protein_line))
+    return pd.DataFrame(data)
+
+
+def results_to_peptide_df(peptide_lines: List[PeptideLine]):
+    data = []
+    for peptide_line in peptide_lines:
+        d = asdict(peptide_line)
+        d['low_scan'] = peptide_line.low_scan
+        d['high_scan'] = peptide_line.high_scan
+        d['file'] = peptide_line.file_path
+        d['charge'] = peptide_line.charge
+        d.pop('file_name')
+        data.append(d)
+    return pd.DataFrame(data)
+
+
 def determine_dta_select_filter_version(peptide_line_header) -> DtaSelectFilterVersion:
     line_elems = peptide_line_header.rstrip().split('\t')
     if len(line_elems) == 24:
@@ -509,7 +610,7 @@ def determine_dta_select_filter_version(peptide_line_header) -> DtaSelectFilterV
         raise ValueError(f'Cannot parse version from peptide header: {peptide_line_header}!')
 
 
-def from_dta_select_filter(file_input: Union[str , TextIOWrapper , StringIO], version: DtaSelectFilterVersion = None)\
+def from_dta_select_filter(file_input: Union[str, TextIOWrapper, StringIO], version: DtaSelectFilterVersion = None) \
         -> (DtaSelectFilterVersion, List[str], List[DTAFilterResult], List[str]):
     if type(file_input) is str:
         lines = file_input.split('\n')
