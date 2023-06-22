@@ -222,9 +222,55 @@ def ms2_spectra_consumer(queue: multiprocessing.Queue, return_dict: Dict):
     print('Consumer: Stopping')
 
 
-# TODO: Remove ms2 queue?
-def from_ms2(ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra=True, processes=1) -> (
-List[str], List[Ms2Spectra]):
+def get_header(ms2_input: Union[str, TextIOWrapper, StringIO]):
+    if type(ms2_input) is str:
+        lines = ms2_input.split('\n')
+    elif type(ms2_input) is TextIOWrapper or type(ms2_input) is StringIO:
+        lines = ms2_input
+    else:
+        raise ValueError(f'Unsupported input type: {type(ms2_input)}!')
+
+    header_lines = []
+
+    for line in lines:
+        if line.startswith('H'):
+            header_lines.append(line)
+        else:
+            break
+
+    return header_lines
+
+
+def get_spectra(ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra=True):
+    if type(ms2_input) is str:
+        lines = ms2_input.split('\n')
+    elif type(ms2_input) is TextIOWrapper or type(ms2_input) is StringIO:
+        lines = ms2_input
+    else:
+        raise ValueError(f'Unsupported input type: {type(ms2_input)}!')
+
+    tmp_spectra_lines = []
+
+    for line in lines:
+
+        if line.startswith('H'):
+            continue
+
+        elif line.startswith('S'):
+            if tmp_spectra_lines:
+                spectra = _deserialize_ms2_spectra(tmp_spectra_lines, include_spectra)
+                yield spectra
+                tmp_spectra_lines = []
+
+        if line:
+            tmp_spectra_lines.append(line)
+
+    spectra = _deserialize_ms2_spectra(tmp_spectra_lines, include_spectra)
+    yield spectra
+
+
+def from_ms2(ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra=True) -> (
+        List[str], List[Ms2Spectra]):
     if type(ms2_input) is str:
         lines = ms2_input.split('\n')
     elif type(ms2_input) is TextIOWrapper or type(ms2_input) is StringIO:
@@ -236,13 +282,6 @@ List[str], List[Ms2Spectra]):
     spectra = []
     tmp_spectra_lines = []
 
-    multi_process = processes > 1
-
-    if multi_process:
-        queue = multiprocessing.Queue()
-        manager = multiprocessing.Manager()
-        return_dict = manager.dict()
-
     for line in lines:
 
         if line.startswith('H'):
@@ -251,31 +290,13 @@ List[str], List[Ms2Spectra]):
 
         elif line.startswith('S'):
             if tmp_spectra_lines:
-                if multi_process:
-                    queue.put(tmp_spectra_lines)
-                else:
-                    spectra.append(_deserialize_ms2_spectra(tmp_spectra_lines, include_spectra))
+                spectra.append(_deserialize_ms2_spectra(tmp_spectra_lines, include_spectra))
                 tmp_spectra_lines = []
 
         if line:
             tmp_spectra_lines.append(line)
 
-    if multi_process:
-        queue.put(tmp_spectra_lines)
-    else:
-        spectra.append(_deserialize_ms2_spectra(tmp_spectra_lines, include_spectra))
-
-    if multi_process:
-        jobs = []
-        for i in range(processes):
-            p = multiprocessing.Process(target=ms2_spectra_consumer, args=(queue, return_dict))
-            jobs.append(p)
-            p.start()
-
-        for proc in jobs:
-            proc.join()
-
-        spectra = list(return_dict.values())
+    spectra.append(_deserialize_ms2_spectra(tmp_spectra_lines, include_spectra))
 
     return header_lines, spectra
 

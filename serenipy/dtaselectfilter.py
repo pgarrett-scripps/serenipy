@@ -1,4 +1,3 @@
-from collections import ChainMap
 from dataclasses import dataclass, asdict
 from enum import Enum, auto
 from io import StringIO, TextIOWrapper
@@ -7,10 +6,12 @@ from typing import Union, List
 import pandas as pd
 
 from .utils import serialize_val, deserialize_val
+from collections import defaultdict
 
 
 class DtaSelectFilterVersion(Enum):
     V2_1_12 = auto()
+    V2_1_12_rt = auto()
     V2_1_12_paser = auto()
     V2_1_13 = auto()
     V2_1_13_timscore = auto()
@@ -67,10 +68,12 @@ class PeptideLine:
             return int(self.file_name.split('.')[3])
         return None
 
-
 peptide_line_V2_1_12_template = '{unique}\t{file_name}\t{x_corr}\t{delta_cn}\t{conf}\t{mass_plus_hydrogen}' \
                                 '\t{calc_mass_plus_hydrogen}\t{total_intensity}\t{spr}\t{prob_score}' \
                                 '\t{ion_proportion}\t{redundancy}\t{sequence}\n'
+peptide_line_V2_1_12_rt_template = '{unique}\t{file_name}\t{x_corr}\t{delta_cn}\t{conf}\t{mass_plus_hydrogen}' \
+                                '\t{calc_mass_plus_hydrogen}\t{ppm}\t{total_intensity}\t{spr}\t{prob_score}\t{pi}' \
+                                '\t{ion_proportion}\t{redundancy}\t{sequence}\t{ret_time}\n'
 peptide_line_V2_1_12_paser_template = '{unique}\t{file_name}\t{x_corr}\t{delta_cn}\t{conf}\t{mass_plus_hydrogen}' \
                                       '\t{calc_mass_plus_hydrogen}\t{ppm}\t{total_intensity}\t{spr}\t{prob_score}' \
                                       '\t{pi}\t{ion_proportion}\t{redundancy}\t{sequence}\t{ret_time}\t{ptm_index}' \
@@ -103,6 +106,24 @@ def _serialize_peptide_line(line: PeptideLine, version: DtaSelectFilterVersion) 
             ion_proportion=serialize_val(line.ion_proportion),
             redundancy=serialize_val(line.redundancy),
             sequence=serialize_val(line.sequence),
+        )
+    elif version == DtaSelectFilterVersion.V2_1_12_rt:
+        return peptide_line_V2_1_12_rt_template.format(
+            unique=serialize_val(line.unique),
+            file_name=serialize_val(line.file_name),
+            x_corr=serialize_val(line.x_corr, 4),
+            delta_cn=serialize_val(line.delta_cn, 4),
+            conf=serialize_val(line.conf, 1),
+            mass_plus_hydrogen=serialize_val(line.mass_plus_hydrogen, 5),
+            calc_mass_plus_hydrogen=serialize_val(line.calc_mass_plus_hydrogen, 5),
+            total_intensity=serialize_val(line.total_intensity),
+            spr=serialize_val(line.spr),
+            prob_score=serialize_val(line.prob_score),
+            pi=serialize_val(line.pi),
+            ion_proportion=serialize_val(line.ion_proportion),
+            redundancy=serialize_val(line.redundancy),
+            sequence=serialize_val(line.sequence),
+            ret_time=serialize_val(line.ret_time),
         )
     elif version == DtaSelectFilterVersion.V2_1_12_paser:
         return peptide_line_V2_1_12_paser_template.format(
@@ -206,6 +227,33 @@ def _deserialize_peptide_line(line: str, version: DtaSelectFilterVersion) -> Pep
             ptm_index_protein_list=None,
             ret_time=None,
         )
+    elif version == DtaSelectFilterVersion.V2_1_12_rt:
+        return PeptideLine(
+            unique=deserialize_val(line_elems[0], str),
+            file_name=deserialize_val(line_elems[1], str),
+            x_corr=deserialize_val(line_elems[2], float),
+            delta_cn=deserialize_val(line_elems[3], float),
+            conf=deserialize_val(line_elems[4], float),
+            mass_plus_hydrogen=deserialize_val(line_elems[5], float),
+            calc_mass_plus_hydrogen=deserialize_val(line_elems[6], float),
+            ppm=deserialize_val(line_elems[7], float),
+            total_intensity=deserialize_val(line_elems[8], float),
+            spr=deserialize_val(line_elems[9], int),
+            prob_score=deserialize_val(line_elems[10], float),
+            pi=deserialize_val(line_elems[11], float),
+            ion_proportion=deserialize_val(line_elems[12], float),
+            redundancy=deserialize_val(line_elems[13], int),
+            sequence=deserialize_val(line_elems[14], str),
+            ret_time=deserialize_val(line_elems[15], float),
+            corrected_1k0=None,
+            experimental_mz=None,
+            im_score=None,
+            ion_mobility=None,
+            measured_im_value=None,
+            predicted_im_value=None,
+            ptm_index=None,
+            ptm_index_protein_list=None,
+        )
     elif version == DtaSelectFilterVersion.V2_1_12_paser:
         return PeptideLine(
             unique=deserialize_val(line_elems[0], str),
@@ -285,8 +333,8 @@ def _deserialize_peptide_line(line: str, version: DtaSelectFilterVersion) -> Pep
             corrected_1k0=deserialize_val(line_elems[19], float),
             ion_mobility=deserialize_val(line_elems[20], float),
             ret_time=deserialize_val(line_elems[21], float),
-            ptm_index=deserialize_val(line_elems[22], str),
-            ptm_index_protein_list=deserialize_val(line_elems[23], str),
+            ptm_index=None if len(line_elems) == 22 else deserialize_val(line_elems[22], str),
+            ptm_index_protein_list=None if len(line_elems) == 22 else deserialize_val(line_elems[23], str),
         )
     else:
         raise ValueError(f'Unsupported DtaSelectFilter Version: {version}!')
@@ -312,6 +360,8 @@ class ProteinLine:
 
 protein_line_V2_1_12_template = '{locus_name}\t{sequence_count}\t{spectrum_count}\t{sequence_coverage}' \
                                 '\t{length}\t{molWt}\t{pi}\t{validation_status}\t{nsaf}\t{empai}\t{description_name}\n'
+protein_line_V2_1_12_rt_template = '{locus_name}\t{sequence_count}\t{spectrum_count}\t{sequence_coverage}' \
+                                '\t{length}\t{molWt}\t{pi}\t{validation_status}\t{nsaf}\t{empai}\t{description_name}\n'
 protein_line_V2_1_12_paser_template = '{locus_name}\t{sequence_count}\t{spectrum_count}\t{sequence_coverage}' \
                                       '\t{length}\t{molWt}\t{pi}\t{validation_status}\t{nsaf}\t{empai}' \
                                       '\t{description_name}\t{h_redundancy}\t{l_redundancy}\t{m_redundancy}\n'
@@ -323,7 +373,7 @@ protein_line_V2_1_13_timscore_template = '{locus_name}\t{sequence_count}\t{spect
 
 
 def _serialize_protein_line(line: ProteinLine, version: DtaSelectFilterVersion) -> str:
-    if version == DtaSelectFilterVersion.V2_1_12:
+    if version == DtaSelectFilterVersion.V2_1_12 or version == DtaSelectFilterVersion.V2_1_12_rt:
         return protein_line_V2_1_12_template.format(
             locus_name=serialize_val(line.locus_name),
             sequence_count=serialize_val(line.sequence_count),
@@ -391,7 +441,7 @@ def _serialize_protein_line(line: ProteinLine, version: DtaSelectFilterVersion) 
 
 def _deserialize_protein_line(line: str, version: DtaSelectFilterVersion) -> ProteinLine:
     line_elems = line.rstrip().split('\t')
-    if version == DtaSelectFilterVersion.V2_1_12:
+    if version == DtaSelectFilterVersion.V2_1_12 or version == DtaSelectFilterVersion.V2_1_12_rt:
         return ProteinLine(
             locus_name=deserialize_val(line_elems[0], str),
             sequence_count=deserialize_val(line_elems[1], int),
@@ -481,7 +531,7 @@ class DTAFilterResult:
             seen = set()
             filtered_peptide_lines = []
             for peptide_line in self.peptide_lines:
-                key = (peptide_line.sequence, peptide_line.charge)
+                key = (peptide_line.sequence, peptide_line.charge, peptide_line.file_path)
                 if key not in seen:
                     filtered_peptide_lines.append(peptide_line)
                     seen.add(key)
@@ -490,7 +540,7 @@ class DTAFilterResult:
             seen = set()
             filtered_peptide_lines = []
             for peptide_line in self.peptide_lines:
-                key = peptide_line.sequence
+                key = (peptide_line.sequence, peptide_line.charge)
                 if key not in seen:
                     filtered_peptide_lines.append(peptide_line)
                     seen.add(key)
@@ -498,28 +548,93 @@ class DTAFilterResult:
         else:
             raise ValueError('Level: {level} not valid. Supported levels: [0,1,2]')
 
+    def mod_filter(self, level: int) -> None:
+        self.peptide_lines.sort(key=lambda x: (x.conf, x.x_corr), reverse=True)
+        if level == 0:
+            self.peptide_lines = [peptide_line for peptide_line in self.peptide_lines if '(' in peptide_line.sequence]
+        elif level == 1:
+            self.peptide_lines = self.peptide_lines
+        elif level == 2:
+            self.peptide_lines = [peptide_line for peptide_line in self.peptide_lines if '(' not in peptide_line.sequence]
+        else:
+            raise ValueError('Level: {level} not valid. Supported levels: [0,1,2]')
+
+    def best_peptide_delta_mass_filter(self, delta_mass: float) -> None:
+
+        if delta_mass is None:
+            return 
+
+        contains_dm_peptide = False
+        for peptide_line in self.peptide_lines:
+            if abs(peptide_line.ppm) <= delta_mass:
+                contains_dm_peptide = True
+                break
+        
+        if not contains_dm_peptide:
+            self.peptide_lines = []
+
+    def best_peptide_fdr_filter(self, fdr: float) -> None:
+
+        if fdr is None:
+            return
+
+        contains_fdr_peptide = False
+        for peptide_line in self.peptide_lines:
+            if 1 - peptide_line.conf <= fdr:
+                contains_fdr_peptide = True
+                break
+
+        if not contains_fdr_peptide:
+            self.peptide_lines = []
+
+    def unique_peptide_filter(self):
+        new_peptide_lines = [peptide_line for peptide_line in self.peptide_lines if peptide_line.unique == '*']
+        self.peptide_lines = new_peptide_lines
+
+
+
+
+
 
 def results_to_df(results: List[DTAFilterResult]) -> pd.DataFrame:
-    data = []
+    data = defaultdict(list)
     for i, result in enumerate(results):
         protein_grp = ' '.join(sorted([protein_line.locus_name for protein_line in result.protein_lines]))
+
+        protein_dicts = []
         for protein_line in result.protein_lines:
-            for peptide_line in result.peptide_lines:
-                protein_dict = asdict(protein_line)
-                protein_pi = protein_dict.pop('pi')
-                protein_dict['protein_pi'] = protein_pi
-                protein_dict['protein_group'] = protein_grp
+            protein_dict = protein_line.__dict__
+            protein_pi = protein_dict.pop('pi')
+            protein_dict['protein_pi'] = protein_pi
+            protein_dict['protein_group'] = protein_grp
+            protein_dicts.append(protein_dict)
 
-                peptide_dict = asdict(peptide_line)
-                peptide_dict['low_scan'] = peptide_line.low_scan
-                peptide_dict['high_scan'] = peptide_line.high_scan
-                peptide_dict['file_path'] = peptide_line.file_path
-                peptide_dict['charge'] = peptide_line.charge
-                peptide_dict.pop('file_name')
+        peptide_dicts = []
+        for peptide_line in result.peptide_lines:
+            peptide_dict = peptide_line.__dict__
+            peptide_dict['low_scan'] = peptide_line.low_scan
+            peptide_dict['high_scan'] = peptide_line.high_scan
+            peptide_dict['file_path'] = peptide_line.file_path
+            peptide_dict['charge'] = peptide_line.charge
+            # peptide_dict.pop('file_name')
+            peptide_dicts.append(peptide_dict)
 
-                d = ChainMap(peptide_dict, protein_dict)
-                data.append(d)
-    return pd.DataFrame(data)
+        for protein_dict in protein_dicts:
+            for peptide_dict in peptide_dicts:
+
+                for k in peptide_dict:
+                    data[k].append(peptide_dict[k])
+
+                for k in protein_dict:
+                    data[k].append(protein_dict[k])
+
+    df = pd.DataFrame(data)
+    df.drop(['file_name'], axis=1, inplace=True)
+    df['file_path'] = pd.Categorical(df['file_path'])
+    df['unique'] = pd.Categorical(df['unique'])
+
+    return df
+
 
 def results_from_df(df: pd.DataFrame) -> List[DTAFilterResult]:
     grp_to_peptide_lines = {}
@@ -539,7 +654,8 @@ def results_from_df(df: pd.DataFrame) -> List[DTAFilterResult]:
                                    h_redundancy=row.get('h_redundancy'),
                                    l_redundancy=row.get('l_redundancy'),
                                    m_redundancy=row.get('m_redundancy'))
-        file_name = '.'.join([row.get('file_path'), str(row.get('low_scan')), str(row.get('high_scan')), str(row.get('charge'))])
+        file_name = '.'.join(
+            [row.get('file_path'), str(row.get('low_scan')), str(row.get('high_scan')), str(row.get('charge'))])
         peptide_line = PeptideLine(unique=row.get('unique'),
                                    file_name=file_name,
                                    x_corr=row.get('x_corr'),
@@ -600,12 +716,16 @@ def determine_dta_select_filter_version(peptide_line_header) -> DtaSelectFilterV
     line_elems = peptide_line_header.rstrip().split('\t')
     if len(line_elems) == 24:
         return DtaSelectFilterVersion.V2_1_13_timscore
+    elif len(line_elems) == 22:
+        return DtaSelectFilterVersion.V2_1_13_timscore
     elif len(line_elems) == 18 and line_elems[-1] == 'Sequence':
         return DtaSelectFilterVersion.V2_1_13
     elif len(line_elems) == 18:
         return DtaSelectFilterVersion.V2_1_12_paser
     elif len(line_elems) == 13:
         return DtaSelectFilterVersion.V2_1_12
+    elif len(line_elems) == 16:
+        return DtaSelectFilterVersion.V2_1_12_rt
     else:
         raise ValueError(f'Cannot parse version from peptide header: {peptide_line_header}!')
 
@@ -663,6 +783,107 @@ def from_dta_select_filter(file_input: Union[str, TextIOWrapper, StringIO], vers
             end_lines.append(line)
 
     return version, h_lines, dta_filter_results, end_lines
+
+
+def convert_to_best_datatype(values):
+    for datatype in (float, int, str):
+        try:
+            converted_values = [datatype(value) for value in values]
+            return converted_values
+        except (ValueError, TypeError):
+            continue
+    raise ValueError("Unable to convert values to any datatype")
+
+def from_dta_select_filter_to_df(file_input: Union[str, TextIOWrapper, StringIO], version: DtaSelectFilterVersion = None) \
+        -> (DtaSelectFilterVersion, List[str], List[DTAFilterResult], List[str]):
+    if type(file_input) is str:
+        lines = file_input.split('\n')
+    elif type(file_input) is TextIOWrapper or type(file_input) is StringIO:
+        lines = file_input
+    else:
+        raise ValueError(f'Unsupported input type: {type(file_input)}!')
+
+    class FileState(Enum):
+        HEADER = 1
+        DATA = 2
+        INFO = 3
+
+    file_state = FileState.HEADER
+
+    h_lines, dta_filter_results, end_lines = [], [], []
+    peptide_lines, protein_lines = [], []
+
+    peptide_data = None
+    protein_data = None
+
+    current_protein_grp = 0
+    peptide_line_cnt = 0
+
+    for line in lines:
+        line_elements = line.rstrip().split("\t")
+
+        if line.startswith('Locus'):
+            protein_data = {key: [] for key in line_elements}
+            protein_data['protein_group'] = []
+        if line.startswith('Unique'):
+            peptide_data = {key: [] for key in line_elements}
+            peptide_data['protein_group'] = []
+
+        # update file state
+        if len(line_elements) > 0 and line_elements[0] == 'Unique':
+            h_lines.append(line)
+            file_state = FileState.DATA
+
+            if version is None:
+                version = determine_dta_select_filter_version(h_lines[-1])
+
+            print(f'Version: {version}')
+            continue
+
+        if len(line_elements) > 1 and line_elements[1] == "Proteins":
+            file_state = FileState.INFO
+
+        if file_state == FileState.HEADER:
+            h_lines.append(line)
+
+        if file_state == FileState.DATA:
+            if line_elements[0] == '' or '*' in line_elements[0] or line_elements[0].isnumeric():
+                for key, value in zip(peptide_data, line_elements):
+                    peptide_data[key].append(value)
+                peptide_data['protein_group'].append(current_protein_grp)
+
+                peptide_line_cnt+=1
+            else:
+                if peptide_line_cnt != 0:
+                    current_protein_grp+=1
+                    peptide_line_cnt = 0
+
+                for key, value in zip(protein_data, line_elements):
+                    protein_data[key].append(value)
+                protein_data['protein_group'].append(current_protein_grp)
+
+        if file_state == FileState.INFO:
+            end_lines.append(line)
+
+    for k in peptide_data:
+        peptide_data[k] = convert_to_best_datatype(peptide_data[k])
+
+    for k in protein_data:
+        protein_data[k] = convert_to_best_datatype(protein_data[k])
+
+    peptide_df = pd.DataFrame(peptide_data).convert_dtypes()
+    protein_df = pd.DataFrame(protein_data).convert_dtypes()
+
+    file_name_components = [fn.split('.') for fn in peptide_df['FileName']]
+
+    peptide_df['file_name'] = [comp[0] for comp in file_name_components]
+    peptide_df['low_scan'] = [comp[1] for comp in file_name_components]
+    peptide_df['high_scan'] = [comp[2] for comp in file_name_components]
+    peptide_df['charge'] = [comp[3] for comp in file_name_components]
+
+    peptide_df.drop(['FileName'], axis=1, inplace=True)
+
+    return version, h_lines, peptide_df, protein_df, end_lines
 
 
 def to_dta_select_filter(version: DtaSelectFilterVersion, h_lines: List[str], dta_filter_results: List[DTAFilterResult],
