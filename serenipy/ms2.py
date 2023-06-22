@@ -145,7 +145,7 @@ class Ms2Spectra:
         return _serialize_ms2_spectra(self)
 
     @staticmethod
-    def deserialize(self, line: str) -> 'Ms2Spectra':
+    def deserialize(line: str) -> 'Ms2Spectra':
         return _deserialize_ms2_spectra(line)
 
 
