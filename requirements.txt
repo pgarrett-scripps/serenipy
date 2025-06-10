@@ -1,3 +1,6 @@
-setuptools==57.0.0
-pandas==2.3.0
-pytest==8.4.0
+# Development dependencies
+setuptools>=57.0.0
+pytest>=8.0.0
+
+# Runtime dependencies (also specified in pyproject.toml)
+pandas>=2.0.0
