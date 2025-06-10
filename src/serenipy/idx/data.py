@@ -8,4 +8,3 @@ class IdxInfo:
     seqOffset: int
     seqLength: int
     proteinIds: List[int] = field(default_factory=list)
-

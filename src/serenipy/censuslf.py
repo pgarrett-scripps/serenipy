@@ -176,5 +176,6 @@ def from_censuslf(census_input: Union[str, TextIOWrapper, StringIO]) -> Tuple[pd
         raise ValueError(f"Unsupported input type: {type(census_input)}")
 
 def to_censuslf(header_df: pd.DataFrame, data_dfs: List[pd.DataFrame], output_prefix: str) -> None:
+    pass
     
     

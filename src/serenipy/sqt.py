@@ -1,7 +1,7 @@
 from io import StringIO, TextIOWrapper
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import List, Union
+from typing import List, Tuple, Union
 
 from .utils import serialize_val, deserialize_val
 
@@ -20,65 +20,85 @@ class LLine:
     peptide_sequence: str
 
 
-l_line_V1_4_0_template = 'L\t{locus_name}\t{peptide_index_in_protein_sequence}\t{peptide_sequence}\n'
-l_line_V2_1_0_template = 'L\t{locus_name}\t{peptide_index_in_protein_sequence}\t{peptide_sequence}\n'
-l_line_V2_1_0_ext_template = 'L\t{locus_name}\t{peptide_index_in_protein_sequence}\t{peptide_sequence}\n'
-l_line_V2_1_0_robin_random_template = 'L\t{locus_name}\t{peptide_index_in_protein_sequence}\t{peptide_sequence}\n'
+l_line_V1_4_0_template = (
+    "L\t{locus_name}\t{peptide_index_in_protein_sequence}\t{peptide_sequence}\n"
+)
+l_line_V2_1_0_template = (
+    "L\t{locus_name}\t{peptide_index_in_protein_sequence}\t{peptide_sequence}\n"
+)
+l_line_V2_1_0_ext_template = (
+    "L\t{locus_name}\t{peptide_index_in_protein_sequence}\t{peptide_sequence}\n"
+)
+l_line_V2_1_0_robin_random_template = (
+    "L\t{locus_name}\t{peptide_index_in_protein_sequence}\t{peptide_sequence}\n"
+)
 
 
 def _deserialize_l_line(line: str, sqt_version: SqtVersion) -> LLine:
-    line_elems = line.rstrip().split('\t')
+    line_elems = line.rstrip().split("\t")
     if sqt_version == SqtVersion.V1_4_0:
-        return LLine(locus_name=deserialize_val(line_elems[1], str),
-                     peptide_index_in_protein_sequence=deserialize_val(line_elems[2], int),
-                     peptide_sequence=deserialize_val(line_elems[3], str),
-                     )
+        return LLine(
+            locus_name=deserialize_val(line_elems[1], str),
+            peptide_index_in_protein_sequence=deserialize_val(line_elems[2], int),
+            peptide_sequence=deserialize_val(line_elems[3], str),
+        )
     elif sqt_version == SqtVersion.V2_1_0:
-        return LLine(locus_name=deserialize_val(line_elems[1], str),
-                     peptide_index_in_protein_sequence=deserialize_val(line_elems[2], int),
-                     peptide_sequence=deserialize_val(line_elems[3], str),
-                     )
+        return LLine(
+            locus_name=deserialize_val(line_elems[1], str),
+            peptide_index_in_protein_sequence=deserialize_val(line_elems[2], int),
+            peptide_sequence=deserialize_val(line_elems[3], str),
+        )
     elif sqt_version == SqtVersion.V2_1_0_ext:
-        return LLine(locus_name=deserialize_val(line_elems[1], str),
-                     peptide_index_in_protein_sequence=deserialize_val(line_elems[2], int),
-                     peptide_sequence=deserialize_val(line_elems[3], str),
-                     )
+        return LLine(
+            locus_name=deserialize_val(line_elems[1], str),
+            peptide_index_in_protein_sequence=deserialize_val(line_elems[2], int),
+            peptide_sequence=deserialize_val(line_elems[3], str),
+        )
     elif sqt_version == SqtVersion.V2_1_0_robin_random:
-        return LLine(locus_name=deserialize_val(line_elems[1], str),
-                     peptide_index_in_protein_sequence=deserialize_val(line_elems[2], int),
-                     peptide_sequence=deserialize_val(line_elems[3], str),
-                     )
+        return LLine(
+            locus_name=deserialize_val(line_elems[1], str),
+            peptide_index_in_protein_sequence=deserialize_val(line_elems[2], int),
+            peptide_sequence=deserialize_val(line_elems[3], str),
+        )
     else:
-        raise ValueError(f'Unsupported Sqt Version: {sqt_version}!')
+        raise ValueError(f"Unsupported Sqt Version: {sqt_version}!")
 
 
 def _serialize_l_line(line: LLine, sqt_version: SqtVersion) -> str:
     if sqt_version == SqtVersion.V1_4_0:
         return l_line_V1_4_0_template.format(
             locus_name=serialize_val(line.locus_name),
-            peptide_index_in_protein_sequence=serialize_val(line.peptide_index_in_protein_sequence),
+            peptide_index_in_protein_sequence=serialize_val(
+                line.peptide_index_in_protein_sequence
+            ),
             peptide_sequence=serialize_val(line.peptide_sequence),
         )
     elif sqt_version == SqtVersion.V2_1_0:
         return l_line_V2_1_0_template.format(
             locus_name=serialize_val(line.locus_name),
-            peptide_index_in_protein_sequence=serialize_val(line.peptide_index_in_protein_sequence),
+            peptide_index_in_protein_sequence=serialize_val(
+                line.peptide_index_in_protein_sequence
+            ),
             peptide_sequence=serialize_val(line.peptide_sequence),
         )
     elif sqt_version == SqtVersion.V2_1_0_ext:
         return l_line_V2_1_0_ext_template.format(
             locus_name=serialize_val(line.locus_name),
-            peptide_index_in_protein_sequence=serialize_val(line.peptide_index_in_protein_sequence),
+            peptide_index_in_protein_sequence=serialize_val(
+                line.peptide_index_in_protein_sequence
+            ),
             peptide_sequence=serialize_val(line.peptide_sequence),
         )
     elif sqt_version == SqtVersion.V2_1_0_robin_random:
         return l_line_V2_1_0_robin_random_template.format(
             locus_name=serialize_val(line.locus_name),
-            peptide_index_in_protein_sequence=serialize_val(line.peptide_index_in_protein_sequence),
+            peptide_index_in_protein_sequence=serialize_val(
+                line.peptide_index_in_protein_sequence
+            ),
             peptide_sequence=serialize_val(line.peptide_sequence),
         )
     else:
-        raise ValueError(f'Unsupported Sqt Version: {sqt_version}!')
+        raise ValueError(f"Unsupported Sqt Version: {sqt_version}!")
 
 
 @dataclass
@@ -101,19 +121,28 @@ class MLine:
     l_lines: List[LLine] = field(default_factory=list)
 
 
-m_line_V1_4_0_template = 'M\t{xcorr_rank}\t{sp_rank}\t{calculated_mass}\t{delta_cn}\t{xcorr}\t{sp}\t{matched_ions}' \
-                         '\t{expected_ions}\t{sequence}\t{validation_status}\n'
-m_line_V2_1_0_template = 'M\t{xcorr_rank}\t{sp_rank}\t{calculated_mass}\t{delta_cn}\t{xcorr}\t{sp}\t{matched_ions}' \
-                         '\t{expected_ions}\t{sequence}\t{validation_status}\t{predicted_ook0}\t{tims_score}\n'
-m_line_V2_1_0_ext_template = 'M\t{xcorr_rank}\t{sp_rank}\t{calculated_mass}\t{delta_cn}\t{xcorr}\t{sp}' \
-                             '\t{matched_ions}\t{expected_ions}\t{sequence}\t{validation_status}\t{predicted_ook0}' \
-                             '\t{tims_score}\t{tims_b_score_m2}\t{tims_b_score_best_m}\n'
-m_line_V2_1_0_robin_random_template = 'M\t{xcorr_rank}\t{sp_rank}\t{calculated_mass}\t{delta_cn}\t{xcorr}\t{sp}' \
-                             '\t{matched_ions}\t{expected_ions}\t{sequence}\t{validation_status}\t{predicted_ook0}' \
-                             '\t{tims_score}\n'
+m_line_V1_4_0_template = (
+    "M\t{xcorr_rank}\t{sp_rank}\t{calculated_mass}\t{delta_cn}\t{xcorr}\t{sp}\t{matched_ions}"
+    "\t{expected_ions}\t{sequence}\t{validation_status}\n"
+)
+m_line_V2_1_0_template = (
+    "M\t{xcorr_rank}\t{sp_rank}\t{calculated_mass}\t{delta_cn}\t{xcorr}\t{sp}\t{matched_ions}"
+    "\t{expected_ions}\t{sequence}\t{validation_status}\t{predicted_ook0}\t{tims_score}\n"
+)
+m_line_V2_1_0_ext_template = (
+    "M\t{xcorr_rank}\t{sp_rank}\t{calculated_mass}\t{delta_cn}\t{xcorr}\t{sp}"
+    "\t{matched_ions}\t{expected_ions}\t{sequence}\t{validation_status}\t{predicted_ook0}"
+    "\t{tims_score}\t{tims_b_score_m2}\t{tims_b_score_best_m}\n"
+)
+m_line_V2_1_0_robin_random_template = (
+    "M\t{xcorr_rank}\t{sp_rank}\t{calculated_mass}\t{delta_cn}\t{xcorr}\t{sp}"
+    "\t{matched_ions}\t{expected_ions}\t{sequence}\t{validation_status}\t{predicted_ook0}"
+    "\t{tims_score}\n"
+)
+
 
 def _deserialize_m_line(line: str, sqt_version: SqtVersion) -> MLine:
-    line_elems = line.rstrip().split('\t')
+    line_elems = line.rstrip().split("\t")
     if sqt_version == SqtVersion.V1_4_0:
         return MLine(
             xcorr_rank=deserialize_val(line_elems[1], int),
@@ -129,7 +158,7 @@ def _deserialize_m_line(line: str, sqt_version: SqtVersion) -> MLine:
             predicted_ook0=None,
             tims_score=None,
             tims_b_score_m2=None,
-            tims_b_score_best_m=None
+            tims_b_score_best_m=None,
         )
     elif sqt_version == SqtVersion.V2_1_0:
         return MLine(
@@ -146,7 +175,7 @@ def _deserialize_m_line(line: str, sqt_version: SqtVersion) -> MLine:
             predicted_ook0=deserialize_val(line_elems[11], float),
             tims_score=deserialize_val(line_elems[12], float),
             tims_b_score_m2=None,
-            tims_b_score_best_m=None
+            tims_b_score_best_m=None,
         )
     elif sqt_version == SqtVersion.V2_1_0_ext:
         return MLine(
@@ -180,10 +209,10 @@ def _deserialize_m_line(line: str, sqt_version: SqtVersion) -> MLine:
             predicted_ook0=deserialize_val(line_elems[11], float),
             tims_score=deserialize_val(line_elems[12], float),
             tims_b_score_m2=None,
-            tims_b_score_best_m=None
+            tims_b_score_best_m=None,
         )
     else:
-        raise ValueError(f'Unsupported Sqt Version: {sqt_version}!')
+        raise ValueError(f"Unsupported Sqt Version: {sqt_version}!")
 
 
 def _serialize_m_line(line: MLine, sqt_version: SqtVersion) -> str:
@@ -248,7 +277,7 @@ def _serialize_m_line(line: MLine, sqt_version: SqtVersion) -> str:
             tims_score=serialize_val(line.tims_score, 4),
         )
     else:
-        raise ValueError(f'Unsupported Sqt Version: {sqt_version}!')
+        raise ValueError(f"Unsupported Sqt Version: {sqt_version}!")
 
 
 @dataclass
@@ -269,19 +298,28 @@ class SLine:
     m_lines: List[MLine] = field(default_factory=list)
 
 
-s_line_V1_4_0_template = 'S\t{low_scan}\t{high_scan}\t{charge}\t{process_time}\t{server}\t{experimental_mass}' \
-                         '\t{total_ion_intensity}\t{lowest_sp}\t{number_matches}\n'
-s_line_V2_1_0_template = 'S\t{low_scan}\t{high_scan}\t{charge}\t{process_time}\t{server}\t{experimental_mass}' \
-                         '\t{total_ion_intensity}\t{lowest_sp}\t{number_matches}\t{experimental_ook0}\n'
-s_line_V2_1_0_ext_template = 'S\t{low_scan}\t{high_scan}\t{charge}\t{process_time}\t{server}\t{experimental_mass}' \
-                             '\t{total_ion_intensity}\t{lowest_sp}\t{number_matches}\t{experimental_ook0}' \
-                             '\t{experimental_mz}\t{corrected_ook0}\n'
-s_line_V2_1_0_robin_random_template = 'S\t{low_scan}\t{high_scan}\t{charge}\t{process_time}\t{server}\t{experimental_mass}' \
-                             '\t{total_ion_intensity}\t{lowest_sp}\t{number_matches}\t{experimental_ook0}' \
-                             '\t{experimental_mz}\n'
+s_line_V1_4_0_template = (
+    "S\t{low_scan}\t{high_scan}\t{charge}\t{process_time}\t{server}\t{experimental_mass}"
+    "\t{total_ion_intensity}\t{lowest_sp}\t{number_matches}\n"
+)
+s_line_V2_1_0_template = (
+    "S\t{low_scan}\t{high_scan}\t{charge}\t{process_time}\t{server}\t{experimental_mass}"
+    "\t{total_ion_intensity}\t{lowest_sp}\t{number_matches}\t{experimental_ook0}\n"
+)
+s_line_V2_1_0_ext_template = (
+    "S\t{low_scan}\t{high_scan}\t{charge}\t{process_time}\t{server}\t{experimental_mass}"
+    "\t{total_ion_intensity}\t{lowest_sp}\t{number_matches}\t{experimental_ook0}"
+    "\t{experimental_mz}\t{corrected_ook0}\n"
+)
+s_line_V2_1_0_robin_random_template = (
+    "S\t{low_scan}\t{high_scan}\t{charge}\t{process_time}\t{server}\t{experimental_mass}"
+    "\t{total_ion_intensity}\t{lowest_sp}\t{number_matches}\t{experimental_ook0}"
+    "\t{experimental_mz}\n"
+)
+
 
 def _deserialize_s_line(line: str, sqt_version: SqtVersion) -> SLine:
-    line_elems = line.rstrip().split('\t')
+    line_elems = line.rstrip().split("\t")
     if sqt_version == SqtVersion.V1_4_0:
         return SLine(
             low_scan=deserialize_val(line_elems[1], int),
@@ -340,68 +378,73 @@ def _deserialize_s_line(line: str, sqt_version: SqtVersion) -> SLine:
             number_matches=deserialize_val(line_elems[9], int),
             experimental_ook0=deserialize_val(line_elems[10], float),
             experimental_mz=deserialize_val(line_elems[11], float),
-            corrected_ook0=None
+            corrected_ook0=None,
         )
     else:
-        raise ValueError(f'Unsupported Sqt Version: {sqt_version}!')
+        raise ValueError(f"Unsupported Sqt Version: {sqt_version}!")
+
 
 def _serialize_s_line(line: SLine, sqt_version: SqtVersion) -> str:
     if sqt_version == SqtVersion.V1_4_0:
-        return s_line_V1_4_0_template.format(low_scan=serialize_val(line.low_scan),
-                                             high_scan=serialize_val(line.high_scan),
-                                             charge=serialize_val(line.charge),
-                                             process_time=serialize_val(line.process_time),
-                                             server=serialize_val(line.server),
-                                             experimental_mass=serialize_val(line.experimental_mass, 5),
-                                             total_ion_intensity=serialize_val(line.total_ion_intensity, 2),
-                                             lowest_sp=serialize_val(line.lowest_sp, 4),
-                                             number_matches=serialize_val(line.number_matches),
-                                             )
+        return s_line_V1_4_0_template.format(
+            low_scan=serialize_val(line.low_scan),
+            high_scan=serialize_val(line.high_scan),
+            charge=serialize_val(line.charge),
+            process_time=serialize_val(line.process_time),
+            server=serialize_val(line.server),
+            experimental_mass=serialize_val(line.experimental_mass, 5),
+            total_ion_intensity=serialize_val(line.total_ion_intensity, 2),
+            lowest_sp=serialize_val(line.lowest_sp, 4),
+            number_matches=serialize_val(line.number_matches),
+        )
     elif sqt_version == SqtVersion.V2_1_0:
-        return s_line_V2_1_0_template.format(low_scan=serialize_val(line.low_scan),
-                                             high_scan=serialize_val(line.high_scan),
-                                             charge=serialize_val(line.charge),
-                                             process_time=serialize_val(line.process_time),
-                                             server=serialize_val(line.server),
-                                             experimental_mass=serialize_val(line.experimental_mass, 5),
-                                             total_ion_intensity=serialize_val(line.total_ion_intensity, 2),
-                                             lowest_sp=serialize_val(line.lowest_sp, 4),
-                                             number_matches=serialize_val(line.number_matches),
-                                             experimental_ook0=serialize_val(line.experimental_ook0, 4),
-                                             )
+        return s_line_V2_1_0_template.format(
+            low_scan=serialize_val(line.low_scan),
+            high_scan=serialize_val(line.high_scan),
+            charge=serialize_val(line.charge),
+            process_time=serialize_val(line.process_time),
+            server=serialize_val(line.server),
+            experimental_mass=serialize_val(line.experimental_mass, 5),
+            total_ion_intensity=serialize_val(line.total_ion_intensity, 2),
+            lowest_sp=serialize_val(line.lowest_sp, 4),
+            number_matches=serialize_val(line.number_matches),
+            experimental_ook0=serialize_val(line.experimental_ook0, 4),
+        )
     elif sqt_version == SqtVersion.V2_1_0_ext:
-        return s_line_V2_1_0_ext_template.format(low_scan=serialize_val(line.low_scan),
-                                                 high_scan=serialize_val(line.high_scan),
-                                                 charge=serialize_val(line.charge),
-                                                 process_time=serialize_val(line.process_time),
-                                                 server=serialize_val(line.server),
-                                                 experimental_mass=serialize_val(line.experimental_mass, 5),
-                                                 total_ion_intensity=serialize_val(line.total_ion_intensity, 2),
-                                                 lowest_sp=serialize_val(line.lowest_sp, 4),
-                                                 number_matches=serialize_val(line.number_matches),
-                                                 experimental_ook0=serialize_val(line.experimental_ook0, 4),
-                                                 experimental_mz=serialize_val(line.experimental_mz, 4),
-                                                 corrected_ook0=serialize_val(line.corrected_ook0, 4),
-                                                 )
+        return s_line_V2_1_0_ext_template.format(
+            low_scan=serialize_val(line.low_scan),
+            high_scan=serialize_val(line.high_scan),
+            charge=serialize_val(line.charge),
+            process_time=serialize_val(line.process_time),
+            server=serialize_val(line.server),
+            experimental_mass=serialize_val(line.experimental_mass, 5),
+            total_ion_intensity=serialize_val(line.total_ion_intensity, 2),
+            lowest_sp=serialize_val(line.lowest_sp, 4),
+            number_matches=serialize_val(line.number_matches),
+            experimental_ook0=serialize_val(line.experimental_ook0, 4),
+            experimental_mz=serialize_val(line.experimental_mz, 4),
+            corrected_ook0=serialize_val(line.corrected_ook0, 4),
+        )
     elif sqt_version == SqtVersion.V2_1_0_robin_random:
-        return s_line_V2_1_0_robin_random_template.format(low_scan=serialize_val(line.low_scan),
-                                                 high_scan=serialize_val(line.high_scan),
-                                                 charge=serialize_val(line.charge),
-                                                 process_time=serialize_val(line.process_time),
-                                                 server=serialize_val(line.server),
-                                                 experimental_mass=serialize_val(line.experimental_mass, 5),
-                                                 total_ion_intensity=serialize_val(line.total_ion_intensity, 2),
-                                                 lowest_sp=serialize_val(line.lowest_sp, 4),
-                                                 number_matches=serialize_val(line.number_matches),
-                                                 experimental_ook0=serialize_val(line.experimental_ook0, 4),
-                                                 experimental_mz=serialize_val(line.experimental_mz, 4),
-                                                 )
+        return s_line_V2_1_0_robin_random_template.format(
+            low_scan=serialize_val(line.low_scan),
+            high_scan=serialize_val(line.high_scan),
+            charge=serialize_val(line.charge),
+            process_time=serialize_val(line.process_time),
+            server=serialize_val(line.server),
+            experimental_mass=serialize_val(line.experimental_mass, 5),
+            total_ion_intensity=serialize_val(line.total_ion_intensity, 2),
+            lowest_sp=serialize_val(line.lowest_sp, 4),
+            number_matches=serialize_val(line.number_matches),
+            experimental_ook0=serialize_val(line.experimental_ook0, 4),
+            experimental_mz=serialize_val(line.experimental_mz, 4),
+        )
     else:
-        raise ValueError(f'Unsupported Sqt Version: {sqt_version}!')
+        raise ValueError(f"Unsupported Sqt Version: {sqt_version}!")
 
 
 def determine_sqt_version(s_line: str) -> SqtVersion:
-    line_elems = s_line.rstrip().split('\t')
+    line_elems = s_line.rstrip().split("\t")
 
     if len(line_elems) == 10:
         return SqtVersion.V1_4_0
@@ -412,16 +455,18 @@ def determine_sqt_version(s_line: str) -> SqtVersion:
     elif len(line_elems) == 12:
         return SqtVersion.V2_1_0_robin_random
     else:
-        raise ValueError(f'Cannot parse version from s_line: {s_line}!')
+        raise ValueError(f"Cannot parse version from s_line: {s_line}!")
 
 
-def from_sqt(sqt_input: Union[str, TextIOWrapper, StringIO]) -> (SqtVersion, List[str], List[SLine]):
+def from_sqt(
+    sqt_input: Union[str, TextIOWrapper, StringIO],
+) -> Tuple[SqtVersion, List[str], List[SLine]]:
     if type(sqt_input) is str:
-        lines = sqt_input.split('\n')
+        lines = sqt_input.split("\n")
     elif type(sqt_input) is TextIOWrapper or type(sqt_input) is StringIO:
         lines = sqt_input
     else:
-        raise ValueError(f'Unsupported input type: {type(sqt_input)}!')
+        raise ValueError(f"Unsupported input type: {type(sqt_input)}!")
 
     version = None
     h_lines, s_lines = [], []
@@ -430,16 +475,16 @@ def from_sqt(sqt_input: Union[str, TextIOWrapper, StringIO]) -> (SqtVersion, Lis
         if line == "" or line == "\n":
             continue
 
-        if line.startswith('H'):
+        if line.startswith("H"):
             h_lines.append(line)
-        elif line.startswith('S'):
+        elif line.startswith("S"):
             if version is None:
                 version = determine_sqt_version(line)
-                print(f'Version: {version}')
+                print(f"Version: {version}")
             s_lines.append(_deserialize_s_line(line, version))
-        elif line.startswith('M'):
+        elif line.startswith("M"):
             s_lines[-1].m_lines.append(_deserialize_m_line(line, version))
-        elif line.startswith('L'):
+        elif line.startswith("L"):
             s_lines[-1].m_lines[-1].l_lines.append(_deserialize_l_line(line, version))
     return version, h_lines, s_lines
 
@@ -447,10 +492,10 @@ def from_sqt(sqt_input: Union[str, TextIOWrapper, StringIO]) -> (SqtVersion, Lis
 def to_sqt(version: SqtVersion, h_lines: List[str], s_lines: List[SLine]) -> str:
     lines = []
     for h_line in h_lines:
-        if h_line.endswith('\n'):
+        if h_line.endswith("\n"):
             lines.append(h_line)
         else:
-            lines.append(h_line + '\n')
+            lines.append(h_line + "\n")
 
     for s_line in s_lines:
         lines.append(_serialize_s_line(s_line, version))
@@ -458,5 +503,5 @@ def to_sqt(version: SqtVersion, h_lines: List[str], s_lines: List[SLine]) -> str
             lines.append(_serialize_m_line(m_line, version))
             for l_line in m_line.l_lines:
                 lines.append(_serialize_l_line(l_line, version))
-        lines.append('\n')
-    return ''.join(lines[:-1]).rstrip('\n')
+        lines.append("\n")
+    return "".join(lines[:-1]).rstrip("\n")

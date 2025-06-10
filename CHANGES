@@ -16,3 +16,11 @@ updated dtaselectfilter filter to compare a tuple of scores (conf, xcorr)
 added robin_random version to sqt parser
 0.2.6
 added to/from dataframe functionality to DTASelectFilter files
+0.3.0
+- pyproject.toml
+- start of census
+- fixed 3.8 typing
+- github actions
+- black formatting
+- added precision to ms2 output
+- fixed tests

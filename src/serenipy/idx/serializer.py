@@ -1,11 +1,19 @@
-from serenipy.idx.utils import create_connection, convert_float, convert_int, BYTES_SIZE, END_INT_VALUE, \
-    convert_int_to_bytes, convert_float_to_bytes
-from serenipy.idx.data import IdxInfo
+from typing import List
+from .utils import (
+    create_connection,
+    convert_float,
+    convert_int,
+    BYTES_SIZE,
+    END_INT_VALUE,
+    convert_int_to_bytes,
+    convert_float_to_bytes,
+)
+from .data import IdxInfo
 
 
 class IdxSerializer:
     @staticmethod
-    def deserialize(idx_db: str) -> [IdxInfo]:
+    def deserialize(idx_db: str) -> List[IdxInfo]:
         idx_info_list = []
 
         connection = create_connection(idx_db)
@@ -17,19 +25,19 @@ class IdxSerializer:
             data = ind[1]
             i = 0
             while i < (len(data)):
-                precursorMass = convert_float(data[i:i + BYTES_SIZE])
+                precursorMass = convert_float(data[i : i + BYTES_SIZE])
                 i += BYTES_SIZE
-                seqOffset = convert_int(data[i:i + BYTES_SIZE])
+                seqOffset = convert_int(data[i : i + BYTES_SIZE])
                 i += BYTES_SIZE
-                seqLength = convert_int(data[i:i + BYTES_SIZE])
+                seqLength = convert_int(data[i : i + BYTES_SIZE])
                 i += BYTES_SIZE
 
                 protein_ids = []
-                converted_int = convert_int(data[i:i + BYTES_SIZE])
+                converted_int = convert_int(data[i : i + BYTES_SIZE])
                 while converted_int != END_INT_VALUE:
                     protein_ids.append(converted_int)
                     i += BYTES_SIZE
-                    converted_int = convert_int(data[i:i + BYTES_SIZE])
+                    converted_int = convert_int(data[i : i + BYTES_SIZE])
 
                 idx_info = IdxInfo(precursorMass, seqOffset, seqLength, protein_ids)
                 idx_info_list.append(idx_info)
@@ -38,7 +46,7 @@ class IdxSerializer:
         return idx_info_list
 
     @staticmethod
-    def serialize(idx_db: str, idx_info_list: [IdxInfo]):
+    def serialize(idx_db: str, idx_info_list: List[IdxInfo]) -> None:
 
         # TODO: Figure out why blob is separated by different idx files.
         # Why arbitrary cutoff for 1.idx.

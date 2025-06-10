@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from io import StringIO, TextIOWrapper
-from typing import Union, List
+from typing import Tuple, Union, List
 
 from .utils import deserialize_val
 
@@ -38,7 +38,7 @@ class ExperimentLine:
 
 def _deserialize_experiment_line(line_elems: list[str]) -> ExperimentLine:
     return ExperimentLine(
-        num=deserialize_val(line_elems[0], lambda x: int(x.strip('[').strip(']'))),
+        num=deserialize_val(line_elems[0], lambda x: int(x.strip("[").strip("]"))),
         sequence=deserialize_val(line_elems[1], str),
         file_name=deserialize_val(line_elems[2], str),
         scan=deserialize_val(line_elems[3], int),
@@ -74,34 +74,45 @@ class CensusLine:
 
 
 def _deserialize_census_line(line: str, census_columns: List[str]) -> CensusLine:
-    line_elems = line.rstrip().split('\t')
+    line_elems = line.rstrip().split("\t")
     experiment_lines_strs = []
     for i, col_name in enumerate(census_columns):
-        if col_name.startswith('NORM'):
+        if col_name.startswith("NORM"):
             break
-        if col_name.startswith('EXP_'):
+        if col_name.startswith("EXP_"):
             experiment_lines_strs.append([])
         if experiment_lines_strs:
             experiment_lines_strs[-1].append(line_elems[i])
-    experiment_lines = [_deserialize_experiment_line(expt_strs) for expt_strs in experiment_lines_strs]
-    norm_intensity_strs = line_elems[i:i + len(experiment_lines)]
-    norm_intensities = [deserialize_val(norm_intensity_strs, float) for norm_intensity_strs in norm_intensity_strs]
+    experiment_lines = [
+        _deserialize_experiment_line(expt_strs) for expt_strs in experiment_lines_strs
+    ]
+    norm_intensity_strs = line_elems[i : i + len(experiment_lines)]
+    norm_intensities = [
+        deserialize_val(norm_intensity_strs, float)
+        for norm_intensity_strs in norm_intensity_strs
+    ]
 
-    return CensusLine(norm_intensities=norm_intensities,
-                      pvalue=deserialize_val(line_elems[i + len(experiment_lines)], float),
-                      qvalue=deserialize_val(line_elems[i + len(experiment_lines) + 1], float),
-                      protein=deserialize_val(line_elems[i + len(experiment_lines) + 2], str),
-                      protein_description=deserialize_val(line_elems[i + len(experiment_lines) + 3], str),
-                      experiment_lines=experiment_lines)
+    return CensusLine(
+        norm_intensities=norm_intensities,
+        pvalue=deserialize_val(line_elems[i + len(experiment_lines)], float),
+        qvalue=deserialize_val(line_elems[i + len(experiment_lines) + 1], float),
+        protein=deserialize_val(line_elems[i + len(experiment_lines) + 2], str),
+        protein_description=deserialize_val(
+            line_elems[i + len(experiment_lines) + 3], str
+        ),
+        experiment_lines=experiment_lines,
+    )
 
 
-def from_census(census_input: Union[str, TextIOWrapper, StringIO]) -> (List[str], List[CensusLine]):
+def from_census(
+    census_input: Union[str, TextIOWrapper, StringIO],
+) -> Tuple[List[str], List[CensusLine]]:
     if type(census_input) is str:
-        lines = census_input.split('\n')
+        lines = census_input.split("\n")
     elif type(census_input) is TextIOWrapper or type(census_input) == StringIO:
         lines = census_input
     else:
-        raise ValueError(f'Unsupported input type: {type(census_input)}!')
+        raise ValueError(f"Unsupported input type: {type(census_input)}!")
     header_lines = []
     census_lines = []
 
@@ -109,11 +120,11 @@ def from_census(census_input: Union[str, TextIOWrapper, StringIO]) -> (List[str]
     for line in lines:
         line = line
 
-        if line.startswith('H'):
+        if line.startswith("H"):
             header_lines.append(line.rstrip())
-        elif line.startswith('SLINE'):
-            census_columns = line.split('\t')
-        elif line.startswith('S'):
+        elif line.startswith("SLINE"):
+            census_columns = line.split("\t")
+        elif line.startswith("S"):
             census_lines.append(_deserialize_census_line(line, census_columns))
 
     return header_lines, census_lines
@@ -121,14 +132,16 @@ def from_census(census_input: Union[str, TextIOWrapper, StringIO]) -> (List[str]
 
 def to_df(census_input: Union[str, TextIOWrapper, StringIO]):
     import pandas as pd
+
     if type(census_input) is str:
-        lines = census_input.split('\n')
+        lines = census_input.split("\n")
     elif type(census_input) is TextIOWrapper or type(census_input) is StringIO:
         lines = census_input
     else:
-        raise ValueError(f'Unsupported input type: {type(census_input)}!')
+        raise ValueError(f"Unsupported input type: {type(census_input)}!")
 
-    filtered_census_lines = filter(lambda line: not line.startswith('H'), lines)
-    census_string_io = StringIO('\n'.join(filtered_census_lines))
-    return pd.read_csv(census_string_io, sep="\t", index_col=False, mangle_dupe_cols=True)
-
+    filtered_census_lines = filter(lambda line: not line.startswith("H"), lines)
+    census_string_io = StringIO("\n".join(filtered_census_lines))
+    return pd.read_csv(
+        census_string_io, sep="\t", index_col=False, mangle_dupe_cols=True
+    )

@@ -178,10 +178,10 @@ class TestDtaSelectFilter(unittest.TestCase):
 
     def test_dtafilter_filter(self):
         peptides_lines = [
-            PeptideLine(file_name='file.1.1.2', sequence='PEPTIDE', conf=.9, x_corr=1),
-            PeptideLine(file_name='file.1.1.2', sequence='PEPTIDE', conf=.8, x_corr=1),
-            PeptideLine(file_name='file.1.1.4', sequence='PEPTIDE', conf=.7, x_corr=1),
-            PeptideLine(file_name='file.1.1.4', sequence='PEPTIDES', conf=.7, x_corr=1),
+            PeptideLine(file_name='file1.1.1.2', sequence='PEPTIDE', conf=.9, x_corr=1),
+            PeptideLine(file_name='file2.1.1.2', sequence='PEPTIDE', conf=.8, x_corr=1),
+            PeptideLine(file_name='file2.1.1.2', sequence='PEPTIDE', conf=.7, x_corr=1),
+            PeptideLine(file_name='file4.1.1.4', sequence='PEPTIDES', conf=.7, x_corr=1),
 
         ]
 
@@ -191,8 +191,8 @@ class TestDtaSelectFilter(unittest.TestCase):
         result.filter(level=0)
         self.assertEqual(4, len(result.peptide_lines))
 
-        result.filter(level=1)
+        result.filter(level=1) # seq, file, charge
         self.assertEqual(3, len(result.peptide_lines))
 
-        result.filter(level=2)
+        result.filter(level=2) # seq, charge
         self.assertEqual(2, len(result.peptide_lines))

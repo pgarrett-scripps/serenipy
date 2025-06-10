@@ -7,27 +7,31 @@ BYTES_SIZE = 4
 
 
 def convert_float(element: bytes) -> float:
-    return float(list(struct.iter_unpack('<f', element))[0][0])
+    return float(list(struct.iter_unpack("<f", element))[0][0])
 
 
 def convert_int(element: bytes) -> int:
     import struct
-    return int(list(struct.iter_unpack('<i', element))[0][0])
+
+    return int(list(struct.iter_unpack("<i", element))[0][0])
 
 
 def convert_chr(element: bytes) -> str:
     import struct
-    return str(struct.iter_unpack('<s', element))
+
+    return str(struct.iter_unpack("<s", element))
 
 
 def convert_float_to_bytes(element: float) -> bytes:
     import struct
-    return struct.pack('<f', element)
+
+    return struct.pack("<f", element)
 
 
 def convert_int_to_bytes(element: int) -> bytes:
     import struct
-    return struct.pack('<i', element)
+
+    return struct.pack("<i", element)
 
 
 def create_connection(path):

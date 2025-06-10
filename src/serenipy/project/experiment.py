@@ -4,8 +4,10 @@ from typing import List
 
 
 def get_searches_from_experiment(experiment: Path) -> List[Path]:
-    searches = list(experiment.glob('search/*/'))
-    searches = [search for search in searches if search.is_dir()]  # removes luciphor_ptm_out_final.txt
+    searches = list(experiment.glob("search/*/"))
+    searches = [
+        search for search in searches if search.is_dir()
+    ]  # removes luciphor_ptm_out_final.txt
     searches.sort(key=os.path.getctime)
     return searches
 
@@ -23,5 +25,3 @@ def get_latest_search_from_experiment(experiment: Path) -> Path:
 
 def get_oldest_search_from_experiment(experiment: Path) -> Path:
     return get_searches_from_experiment(experiment)[-1]
-
-
