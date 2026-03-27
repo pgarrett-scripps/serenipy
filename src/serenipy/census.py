@@ -1,3 +1,5 @@
+"""Parser for Census quantification file format."""
+
 from dataclasses import dataclass
 from io import StringIO, TextIOWrapper
 from typing import Tuple, Union, List
@@ -13,6 +15,8 @@ def apply_transformation(val, t):
 
 @dataclass
 class ExperimentLine:
+    """A single experiment entry within a Census S-line."""
+
     num: Union[int, None]
     sequence: Union[str, None]
     file_name: Union[str, None]
@@ -36,7 +40,7 @@ class ExperimentLine:
     ion_injection_time: Union[float, None]
 
 
-def _deserialize_experiment_line(line_elems: list[str]) -> ExperimentLine:
+def _deserialize_experiment_line(line_elems: List[str]) -> ExperimentLine:
     return ExperimentLine(
         num=deserialize_val(line_elems[0], lambda x: int(x.strip("[").strip("]"))),
         sequence=deserialize_val(line_elems[1], str),
@@ -64,6 +68,8 @@ def _deserialize_experiment_line(line_elems: list[str]) -> ExperimentLine:
 
 @dataclass
 class CensusLine:
+    """A Census S-line entry with normalized intensities, statistics, and experiment data."""
+
     norm_intensities: List[float]
     pvalue: Union[float, None]
     qvalue: Union[float, None]
@@ -107,6 +113,14 @@ def _deserialize_census_line(line: str, census_columns: List[str]) -> CensusLine
 def from_census(
     census_input: Union[str, TextIOWrapper, StringIO],
 ) -> Tuple[List[str], List[CensusLine]]:
+    """Parse a Census quantification file.
+
+    Args:
+        census_input: Census data as a string or file-like object.
+
+    Returns:
+        Tuple of (header_lines, list of CensusLine).
+    """
     if type(census_input) is str:
         lines = census_input.split("\n")
     elif type(census_input) is TextIOWrapper or type(census_input) == StringIO:
@@ -118,8 +132,6 @@ def from_census(
 
     census_columns = None
     for line in lines:
-        line = line
-
         if line.startswith("H"):
             header_lines.append(line.rstrip())
         elif line.startswith("SLINE"):
@@ -131,6 +143,14 @@ def from_census(
 
 
 def to_df(census_input: Union[str, TextIOWrapper, StringIO]):
+    """Parse a Census file directly into a pandas DataFrame.
+
+    Args:
+        census_input: Census data as a string or file-like object.
+
+    Returns:
+        A pandas DataFrame with the Census data.
+    """
     import pandas as pd
 
     if type(census_input) is str:
@@ -143,5 +163,5 @@ def to_df(census_input: Union[str, TextIOWrapper, StringIO]):
     filtered_census_lines = filter(lambda line: not line.startswith("H"), lines)
     census_string_io = StringIO("\n".join(filtered_census_lines))
     return pd.read_csv(
-        census_string_io, sep="\t", index_col=False, mangle_dupe_cols=True
+        census_string_io, sep="\t", index_col=False
     )

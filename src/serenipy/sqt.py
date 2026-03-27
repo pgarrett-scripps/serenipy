@@ -1,3 +1,5 @@
+"""Parser and serializer for SQT (Sequest/search results) file format."""
+
 from io import StringIO, TextIOWrapper
 from dataclasses import dataclass, field
 from enum import Enum, auto
@@ -7,6 +9,8 @@ from .utils import serialize_val, deserialize_val
 
 
 class SqtVersion(Enum):
+    """SQT file format version identifiers."""
+
     V1_4_0 = auto()
     V2_1_0 = auto()
     V2_1_0_ext = auto()
@@ -15,6 +19,8 @@ class SqtVersion(Enum):
 
 @dataclass
 class LLine:
+    """An L-line (locus) entry in an SQT file, representing a protein match."""
+
     locus_name: str
     peptide_index_in_protein_sequence: int
     peptide_sequence: str
@@ -103,6 +109,8 @@ def _serialize_l_line(line: LLine, sqt_version: SqtVersion) -> str:
 
 @dataclass
 class MLine:
+    """An M-line (match) entry in an SQT file, representing a peptide-spectrum match."""
+
     xcorr_rank: Union[int, None]
     sp_rank: Union[int, None]
     calculated_mass: Union[float, None]
@@ -282,6 +290,8 @@ def _serialize_m_line(line: MLine, sqt_version: SqtVersion) -> str:
 
 @dataclass
 class SLine:
+    """An S-line (spectrum) entry in an SQT file, containing nested M-lines and L-lines."""
+
     low_scan: Union[int, None]
     high_scan: Union[int, None]
     charge: Union[int, None]
@@ -444,6 +454,17 @@ def _serialize_s_line(line: SLine, sqt_version: SqtVersion) -> str:
 
 
 def determine_sqt_version(s_line: str) -> SqtVersion:
+    """Determine the SQT file version from the number of fields in an S-line.
+
+    Args:
+        s_line: A raw S-line string from an SQT file.
+
+    Returns:
+        The detected SqtVersion.
+
+    Raises:
+        ValueError: If the S-line field count does not match any known version.
+    """
     line_elems = s_line.rstrip().split("\t")
 
     if len(line_elems) == 10:
@@ -461,6 +482,14 @@ def determine_sqt_version(s_line: str) -> SqtVersion:
 def from_sqt(
     sqt_input: Union[str, TextIOWrapper, StringIO],
 ) -> Tuple[SqtVersion, List[str], List[SLine]]:
+    """Parse an SQT file or string, auto-detecting the format version.
+
+    Args:
+        sqt_input: SQT data as a string or file-like object.
+
+    Returns:
+        Tuple of (SqtVersion, header_lines, list of SLine).
+    """
     if type(sqt_input) is str:
         lines = sqt_input.split("\n")
     elif type(sqt_input) is TextIOWrapper or type(sqt_input) is StringIO:
@@ -480,7 +509,6 @@ def from_sqt(
         elif line.startswith("S"):
             if version is None:
                 version = determine_sqt_version(line)
-                print(f"Version: {version}")
             s_lines.append(_deserialize_s_line(line, version))
         elif line.startswith("M"):
             s_lines[-1].m_lines.append(_deserialize_m_line(line, version))
@@ -490,6 +518,16 @@ def from_sqt(
 
 
 def to_sqt(version: SqtVersion, h_lines: List[str], s_lines: List[SLine]) -> str:
+    """Serialize SQT data back to string format.
+
+    Args:
+        version: The SQT version to use for serialization.
+        h_lines: List of header line strings.
+        s_lines: List of SLine objects.
+
+    Returns:
+        Complete SQT file content as a string.
+    """
     lines = []
     for h_line in h_lines:
         if h_line.endswith("\n"):

@@ -1,3 +1,5 @@
+"""Parser and serializer for MS2 mass spectrometry file format."""
+
 import multiprocessing
 from dataclasses import dataclass
 from enum import Enum
@@ -13,6 +15,8 @@ peak_line_charged_template = "{mz} {intensity} {charge}\n"
 
 
 class ILineKeywords(Enum):
+    """Enumeration of known I-line metadata keywords in MS2 spectra."""
+
     PARENT_ID_KEYWORD = "TIMSTOF_Parent_ID"
     PRECURSOR_ID_KEYWORD = "TIMSTOF_Precursor_ID"
     OOK0_KEYWORD = "Ion Mobility"
@@ -32,6 +36,20 @@ class ILineKeywords(Enum):
 
 @dataclass
 class Ms2Spectra:
+    """A single MS2 spectrum with scan information, m/z values, and intensities.
+
+    Attributes:
+        low_scan: Low scan number.
+        high_scan: High scan number.
+        mz: Precursor m/z value.
+        mass: Precursor mass.
+        charge: Precursor charge state.
+        info: Dictionary of I-line metadata key-value pairs.
+        mz_spectra: List of fragment m/z values.
+        intensity_spectra: List of fragment intensities.
+        charge_spectra: List of fragment charge states (empty if not present).
+    """
+
     low_scan: int
     high_scan: int
     mz: float
@@ -247,8 +265,6 @@ def _deserialize_ms2_spectra(
 
 
 def ms2_spectra_consumer(queue: multiprocessing.Queue, return_dict: Dict):
-    print("Consumer: Running", flush=True)
-    # consume work
     while True:
         try:
             tmp_spectra_lines = queue.get(timeout=1)
@@ -257,10 +273,16 @@ def ms2_spectra_consumer(queue: multiprocessing.Queue, return_dict: Dict):
         ms2_spectra = _deserialize_ms2_spectra(tmp_spectra_lines)
         return_dict[ms2_spectra.low_scan] = ms2_spectra
 
-    print("Consumer: Stopping")
-
 
 def get_header(ms2_input: Union[str, TextIOWrapper, StringIO]):
+    """Extract only the header (H) lines from an MS2 input.
+
+    Args:
+        ms2_input: MS2 data as a string or file-like object.
+
+    Returns:
+        List of header line strings.
+    """
     if type(ms2_input) is str:
         lines = ms2_input.split("\n")
     elif type(ms2_input) is TextIOWrapper or type(ms2_input) is StringIO:
@@ -280,6 +302,15 @@ def get_header(ms2_input: Union[str, TextIOWrapper, StringIO]):
 
 
 def get_spectra(ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra=True):
+    """Lazily yield Ms2Spectra from an MS2 input (generator).
+
+    Args:
+        ms2_input: MS2 data as a string or file-like object.
+        include_spectra: If True, parse peak data; if False, only parse metadata.
+
+    Yields:
+        Ms2Spectra objects one at a time.
+    """
     if type(ms2_input) is str:
         lines = ms2_input.split("\n")
     elif type(ms2_input) is TextIOWrapper or type(ms2_input) is StringIO:
@@ -310,6 +341,15 @@ def get_spectra(ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra=
 def from_ms2(
     ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra=True
 ) -> Tuple[List[str], List[Ms2Spectra]]:
+    """Parse an MS2 file or string into header lines and spectra.
+
+    Args:
+        ms2_input: MS2 data as a string or file-like object.
+        include_spectra: If True, parse peak data; if False, only parse metadata.
+
+    Returns:
+        Tuple of (header_lines, list of Ms2Spectra).
+    """
     if type(ms2_input) is str:
         lines = ms2_input.split("\n")
     elif type(ms2_input) is TextIOWrapper or type(ms2_input) is StringIO:
@@ -343,6 +383,15 @@ def from_ms2(
 
 
 def to_ms2(h_lines: List[str], ms2_spectras: List[Ms2Spectra]) -> str:
+    """Serialize header lines and spectra back to MS2 format string.
+
+    Args:
+        h_lines: List of header line strings.
+        ms2_spectras: List of Ms2Spectra to serialize.
+
+    Returns:
+        Complete MS2 file content as a string.
+    """
     lines = []
     for h_line in h_lines:
         if h_line.endswith("\n"):

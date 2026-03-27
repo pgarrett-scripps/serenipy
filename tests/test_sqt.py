@@ -1,14 +1,16 @@
 import unittest
-
+from pathlib import Path
 
 from serenipy.sqt import from_sqt, to_sqt
+
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
 class TestSqt(unittest.TestCase):
 
     def test_load_sqt_v1_4_0(self):
 
-        with open('data/sqt_V1_4_0.sqt', 'r') as file:
+        with open(DATA_DIR / 'sqt_V1_4_0.sqt', 'r') as file:
             sqt_version, h_lines, s_lines = from_sqt(file)
 
         self.assertEqual(len(s_lines), 4)
@@ -72,7 +74,7 @@ class TestSqt(unittest.TestCase):
 
     def test_load_sqt_v2_1_0(self):
 
-        with open('data/sqt_V2_1_0.sqt', 'r') as file:
+        with open(DATA_DIR / 'sqt_V2_1_0.sqt', 'r') as file:
             sqt_version, h_lines, s_lines = from_sqt(file)
 
         self.assertEqual(len(s_lines), 3)
@@ -148,7 +150,7 @@ class TestSqt(unittest.TestCase):
 
     def test_load_sqt_v2_1_0_ext(self):
 
-        with open('data/sqt_V2_1_0_ext.sqt', 'r') as file:
+        with open(DATA_DIR / 'sqt_V2_1_0_ext.sqt', 'r') as file:
             sqt_version, h_lines, s_lines = from_sqt(file)
 
         sqt_str = to_sqt(sqt_version, h_lines, s_lines)

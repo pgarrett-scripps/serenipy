@@ -1,3 +1,5 @@
+"""Parser and serializer for DTASelect-filter output files."""
+
 from dataclasses import dataclass, asdict
 from enum import Enum, auto
 from io import StringIO, TextIOWrapper
@@ -10,6 +12,8 @@ from collections import defaultdict
 
 
 class DtaSelectFilterVersion(Enum):
+    """DTASelect-filter file format version identifiers."""
+
     V2_1_12 = auto()
     V2_1_12_rt = auto()
     V2_1_12_paser = auto()
@@ -19,6 +23,11 @@ class DtaSelectFilterVersion(Enum):
 
 @dataclass
 class PeptideLine:
+    """A peptide line entry from a DTASelect-filter file.
+
+    Properties derived from file_name: file_path, low_scan, high_scan, charge.
+    """
+
     unique: Union[str, None] = None
     file_name: Union[str, None] = None
     x_corr: Union[float, None] = None
@@ -358,6 +367,8 @@ def _deserialize_peptide_line(
 
 @dataclass
 class ProteinLine:
+    """A protein line entry from a DTASelect-filter file."""
+
     locus_name: Union[str, None] = None
     sequence_count: Union[int, None] = None
     spectrum_count: Union[int, None] = None
@@ -557,6 +568,8 @@ def _deserialize_protein_line(
 
 @dataclass
 class DTAFilterResult:
+    """A group of protein and peptide lines from a DTASelect-filter file."""
+
     protein_lines: List[ProteinLine]
     peptide_lines: List[PeptideLine]
 
@@ -570,6 +583,12 @@ class DTAFilterResult:
         return "".join(protein_line_strings + peptide_line_strings)
 
     def filter(self, level: int) -> None:
+        """Filter peptide lines by redundancy level.
+
+        Args:
+            level: 0 = no filtering, 1 = unique per (sequence, charge, file),
+                   2 = unique per (sequence, charge).
+        """
         self.peptide_lines.sort(key=lambda x: (x.conf, x.x_corr), reverse=True)
         if level == 0:
             pass
@@ -811,6 +830,15 @@ def from_dta_select_filter(
     file_input: Union[str, TextIOWrapper, StringIO],
     version: DtaSelectFilterVersion = None,
 ) -> Tuple[DtaSelectFilterVersion, List[str], List[DTAFilterResult], List[str]]:
+    """Parse a DTASelect-filter file, auto-detecting the format version.
+
+    Args:
+        file_input: DTASelect-filter data as a string or file-like object.
+        version: Optional version override; auto-detected if None.
+
+    Returns:
+        Tuple of (version, head_lines, list of DTAFilterResult, tail_lines).
+    """
     if type(file_input) is str:
         lines = file_input.split("\n")
     elif type(file_input) is TextIOWrapper or type(file_input) is StringIO:
@@ -839,7 +867,6 @@ def from_dta_select_filter(
             if version is None:
                 version = determine_dta_select_filter_version(h_lines[-1])
 
-            print(f"Version: {version}")
             continue
 
         if len(line_elements) > 1 and line_elements[1] == "Proteins":
@@ -890,6 +917,15 @@ def from_dta_select_filter_to_df(
     file_input: Union[str, TextIOWrapper, StringIO],
     version: DtaSelectFilterVersion = None,
 ) -> Tuple[DtaSelectFilterVersion, List[str], List[DTAFilterResult], List[str]]:
+    """Parse a DTASelect-filter file directly into pandas DataFrames.
+
+    Args:
+        file_input: DTASelect-filter data as a string or file-like object.
+        version: Optional version override; auto-detected if None.
+
+    Returns:
+        Tuple of (version, head_lines, peptide_df, protein_df, tail_lines).
+    """
     if type(file_input) is str:
         lines = file_input.split("\n")
     elif type(file_input) is TextIOWrapper or type(file_input) is StringIO:
@@ -931,7 +967,6 @@ def from_dta_select_filter_to_df(
             if version is None:
                 version = determine_dta_select_filter_version(h_lines[-1])
 
-            print(f"Version: {version}")
             continue
 
         if len(line_elements) > 1 and line_elements[1] == "Proteins":
@@ -990,6 +1025,17 @@ def to_dta_select_filter(
     dta_filter_results: List[DTAFilterResult],
     end_lines: List[str],
 ) -> str:
+    """Serialize DTASelect-filter data back to string format.
+
+    Args:
+        version: The format version to use for serialization.
+        h_lines: Header lines.
+        dta_filter_results: List of DTAFilterResult objects.
+        end_lines: Tail/footer lines.
+
+    Returns:
+        Complete DTASelect-filter file content as a string.
+    """
     lines = []
     for h_line in h_lines:
         if h_line.endswith("\n"):
