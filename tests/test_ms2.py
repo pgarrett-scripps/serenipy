@@ -1,13 +1,16 @@
 import unittest
+from pathlib import Path
 
 from serenipy.ms2 import to_ms2, from_ms2
+
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
 class TestMs2(unittest.TestCase):
 
     def test_load_ms2_from_file(self):
 
-        with open('data/sample.ms2', 'r') as file:
+        with open(DATA_DIR / 'sample.ms2', 'r') as file:
             header, ms2_spectras = from_ms2(file)
 
         self.assertEqual(len(ms2_spectras), 3)

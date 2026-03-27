@@ -1,12 +1,15 @@
 import unittest
+from pathlib import Path
 
 from serenipy.dtaselectfilter import from_dta_select_filter, to_dta_select_filter, DTAFilterResult, PeptideLine
+
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
 class TestDtaSelectFilter(unittest.TestCase):
 
     def test_to_from_dta_select_filter_V2_1_13(self):
-        with open('data/DTASelect-filter_V2_1_13.txt', 'r') as file:
+        with open(DATA_DIR / 'DTASelect-filter_V2_1_13.txt', 'r') as file:
             version, head_lines, dta_select_filter_results, tail_lines = from_dta_select_filter(file)
 
         self.assertEqual(dta_select_filter_results[0].protein_lines[0].locus_name, 'sp|P05387|RLA2_HUMAN')
@@ -87,7 +90,7 @@ class TestDtaSelectFilter(unittest.TestCase):
         self.assertEqual(dta_select_filter_results[0].peptide_lines[0].sequence, 'R.YVASYLLAALGGNSSPSAK.D')
 
     def test_to_from_dta_select_filter_V2_1_12(self):
-        with open('data/DTASelect-filter_V2_1_12_paser.txt', 'r') as file:
+        with open(DATA_DIR / 'DTASelect-filter_V2_1_12_paser.txt', 'r') as file:
             version, head_lines, dta_select_filter_results, tail_lines = from_dta_select_filter(file)
             original_text = str(file.read())
 
