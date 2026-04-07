@@ -1,14 +1,15 @@
 from typing import List
+
+from .data import IdxInfo
 from .utils import (
-    create_connection,
-    convert_float,
-    convert_int,
     BYTES_SIZE,
     END_INT_VALUE,
-    convert_int_to_bytes,
+    convert_float,
     convert_float_to_bytes,
+    convert_int,
+    convert_int_to_bytes,
+    create_connection,
 )
-from .data import IdxInfo
 
 
 class IdxSerializer:

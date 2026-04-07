@@ -7,7 +7,7 @@ name = "serenipy"
 dynamic = ["version"]
 description = "Python library for parsing IP2 proteomics file formats (MS2, SQT, DTASelect-filter, Census)"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "Patrick Garrett", email = "pgarrett@scripps.edu"}
@@ -18,7 +18,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -29,12 +28,12 @@ dependencies = [
     "pandas>=2.0.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
-    "flake8>=6.0.0",
-    "build",
+    "ruff>=0.6.0",
+    "ty",
 ]
 
 [project.urls]
@@ -49,8 +48,26 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.dynamic]
+version = {attr = "serenipy.__version__"}
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
-[tool.setuptools.dynamic]
-version = {attr = "serenipy.__version__"}
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+# Deferred to follow-up PRs:
+#   "B"  - flake8-bugbear (zip-strict, unused-loop-vars in legacy parsers)
+#   "UP" - pyupgrade (modernize type hints to PEP 604/585 across all files)
+ignore = [
+    "E721",  # type() == comparisons in census.py legacy code
+    "F841",  # unused locals in dtaselectfilter.py parser
+]
+
+[tool.ty.src]
+root = "./src"

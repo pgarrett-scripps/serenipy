@@ -1,11 +1,11 @@
 """Parser and serializer for SQT (Sequest/search results) file format."""
 
-from io import StringIO, TextIOWrapper
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from io import StringIO, TextIOWrapper
 from typing import List, Tuple, Union
 
-from .utils import serialize_val, deserialize_val
+from .utils import deserialize_val, serialize_val
 
 
 class SqtVersion(Enum):
@@ -74,33 +74,25 @@ def _serialize_l_line(line: LLine, sqt_version: SqtVersion) -> str:
     if sqt_version == SqtVersion.V1_4_0:
         return l_line_V1_4_0_template.format(
             locus_name=serialize_val(line.locus_name),
-            peptide_index_in_protein_sequence=serialize_val(
-                line.peptide_index_in_protein_sequence
-            ),
+            peptide_index_in_protein_sequence=serialize_val(line.peptide_index_in_protein_sequence),
             peptide_sequence=serialize_val(line.peptide_sequence),
         )
     elif sqt_version == SqtVersion.V2_1_0:
         return l_line_V2_1_0_template.format(
             locus_name=serialize_val(line.locus_name),
-            peptide_index_in_protein_sequence=serialize_val(
-                line.peptide_index_in_protein_sequence
-            ),
+            peptide_index_in_protein_sequence=serialize_val(line.peptide_index_in_protein_sequence),
             peptide_sequence=serialize_val(line.peptide_sequence),
         )
     elif sqt_version == SqtVersion.V2_1_0_ext:
         return l_line_V2_1_0_ext_template.format(
             locus_name=serialize_val(line.locus_name),
-            peptide_index_in_protein_sequence=serialize_val(
-                line.peptide_index_in_protein_sequence
-            ),
+            peptide_index_in_protein_sequence=serialize_val(line.peptide_index_in_protein_sequence),
             peptide_sequence=serialize_val(line.peptide_sequence),
         )
     elif sqt_version == SqtVersion.V2_1_0_robin_random:
         return l_line_V2_1_0_robin_random_template.format(
             locus_name=serialize_val(line.locus_name),
-            peptide_index_in_protein_sequence=serialize_val(
-                line.peptide_index_in_protein_sequence
-            ),
+            peptide_index_in_protein_sequence=serialize_val(line.peptide_index_in_protein_sequence),
             peptide_sequence=serialize_val(line.peptide_sequence),
         )
     else:
@@ -500,7 +492,6 @@ def from_sqt(
     version = None
     h_lines, s_lines = [], []
     for line in lines:
-
         if line == "" or line == "\n":
             continue
 

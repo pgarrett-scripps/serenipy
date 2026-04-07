@@ -1,15 +1,14 @@
 import unittest
 from pathlib import Path
 
-from serenipy.census import from_census, to_df, CensusLine, ExperimentLine
+from serenipy.census import CensusLine, ExperimentLine, from_census, to_df
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
 class TestCensus(unittest.TestCase):
-
     def test_from_census(self):
-        with open(DATA_DIR / 'census.txt', 'r') as file:
+        with open(DATA_DIR / "census.txt", "r") as file:
             header_lines, census_lines = from_census(file)
 
         self.assertIsInstance(header_lines, list)
@@ -29,7 +28,7 @@ class TestCensus(unittest.TestCase):
     def test_census_to_df(self):
         import pandas as pd
 
-        with open(DATA_DIR / 'census.txt', 'r') as file:
+        with open(DATA_DIR / "census.txt", "r") as file:
             df = to_df(file)
 
         self.assertIsInstance(df, pd.DataFrame)

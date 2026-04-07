@@ -93,8 +93,8 @@ All parsers accept either a file-like object or a string as input. Format versio
 ```bash
 git clone https://github.com/pgarrett-scripps/serenipy.git
 cd serenipy
-pip install -e ".[dev]"
-pytest tests -v
+uv sync
+just check     # lint + ty + tests
 ```
 
 ## License

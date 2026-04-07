@@ -1,6 +1,6 @@
 """Shared serialization utilities for converting values to/from string representations."""
 
-from typing import Callable, Any
+from typing import Any, Callable
 
 
 def serialize_val(val: Any, precision=None) -> str:
