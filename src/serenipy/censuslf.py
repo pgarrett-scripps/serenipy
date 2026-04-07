@@ -1,10 +1,10 @@
 from io import StringIO, TextIOWrapper
-from typing import Iterable, List, Tuple, Union
+from typing import Any, Dict, Iterable, List, Tuple, Union
 
 import pandas as pd
 
 
-def _parse_header_lines(lines):
+def _parse_header_lines(lines: Iterable[str]) -> pd.DataFrame:
     """Parse header (H) lines into a dataframe."""
     header_data = []
 
@@ -36,7 +36,7 @@ def _parse_header_lines(lines):
         return pd.DataFrame(columns=["Type", "Key", "Value"])
 
 
-def _parse_sline_definition(sline_def):
+def _parse_sline_definition(sline_def: str) -> Dict[str, Any]:
     """Parse the SLINE definition to identify column names and experiment structure."""
     parts = sline_def.strip().split("\t")
 
@@ -79,7 +79,7 @@ def _parse_sline_definition(sline_def):
     }
 
 
-def _parse_data_lines(lines, sline_info):
+def _parse_data_lines(lines: Iterable[str], sline_info: Dict[str, Any]) -> Dict[str, pd.DataFrame]:
     """Parse S lines (data lines) into multiple dataframes, one per experiment."""
     # Prepare dataframes for each experiment and one for common columns
     exp_dfs = {}

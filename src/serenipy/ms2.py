@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from io import StringIO, TextIOWrapper
 from queue import Empty
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Generator, List, Optional, Tuple, Union
 
 s_line_template = "S\t{low_scan}\t{high_scan}\t{mz}\n"
 i_line_template = "I\t{keyword}\t{value}\n"
@@ -66,7 +66,7 @@ class Ms2Spectra:
         return int(parent_id) if parent_id else None
 
     @parent_id.setter
-    def parent_id(self, parent_id: Union[str, int]):
+    def parent_id(self, parent_id: Union[str, int]) -> None:
         self.info[ILineKeywords.PARENT_ID_KEYWORD.value] = parent_id
 
     @property
@@ -75,7 +75,7 @@ class Ms2Spectra:
         return int(precursor_id) if precursor_id else None
 
     @precursor_id.setter
-    def precursor_id(self, precursor_id: Union[str, int]):
+    def precursor_id(self, precursor_id: Union[str, int]) -> None:
         self.info[ILineKeywords.PRECURSOR_ID_KEYWORD.value] = precursor_id
 
     @property
@@ -84,7 +84,7 @@ class Ms2Spectra:
         return float(ook0) if ook0 else None
 
     @ook0.setter
-    def ook0(self, ook0: Union[str, float]):
+    def ook0(self, ook0: Union[str, float]) -> None:
         self.info[ILineKeywords.OOK0_KEYWORD.value] = ook0
 
     @property
@@ -93,7 +93,7 @@ class Ms2Spectra:
         return float(ccs) if ccs else None
 
     @ccs.setter
-    def ccs(self, ccs: Union[str, float]):
+    def ccs(self, ccs: Union[str, float]) -> None:
         self.info[ILineKeywords.CCS_KEYWORD.value] = ccs
 
     @property
@@ -102,7 +102,7 @@ class Ms2Spectra:
         return float(rt) if rt else None
 
     @rt.setter
-    def rt(self, rt: Union[str, float]):
+    def rt(self, rt: Union[str, float]) -> None:
         self.info[ILineKeywords.RETENTION_TIME_KEYWORD.value] = rt
 
     @property
@@ -111,7 +111,7 @@ class Ms2Spectra:
         return float(ce) if ce else None
 
     @ce.setter
-    def ce(self, ce: Union[str, float]):
+    def ce(self, ce: Union[str, float]) -> None:
         self.info[ILineKeywords.COLLISION_ENERGY_KEYWORD.value] = ce
 
     @property
@@ -120,7 +120,7 @@ class Ms2Spectra:
         return float(iso_mz) if iso_mz else None
 
     @iso_mz.setter
-    def iso_mz(self, iso_mz: Union[str, float]):
+    def iso_mz(self, iso_mz: Union[str, float]) -> None:
         self.info[ILineKeywords.ISOLATION_MZ_KEYWORD.value] = iso_mz
 
     @property
@@ -129,7 +129,7 @@ class Ms2Spectra:
         return float(iso_width) if iso_width else None
 
     @iso_width.setter
-    def iso_width(self, iso_width: Union[str, float]):
+    def iso_width(self, iso_width: Union[str, float]) -> None:
         self.info[ILineKeywords.ISOLATION_WIDTH_KEYWORD.value] = iso_width
 
     @property
@@ -138,7 +138,7 @@ class Ms2Spectra:
         return int(scan_begin) if scan_begin else None
 
     @scan_begin.setter
-    def scan_begin(self, scan_begin: Union[str, int]):
+    def scan_begin(self, scan_begin: Union[str, int]) -> None:
         self.info[ILineKeywords.SCAN_NUMBER_BEGIN_KEYWORD.value] = scan_begin
 
     @property
@@ -147,7 +147,7 @@ class Ms2Spectra:
         return int(scan_end) if scan_end else None
 
     @scan_end.setter
-    def scan_end(self, scan_end: Union[str, int]):
+    def scan_end(self, scan_end: Union[str, int]) -> None:
         self.info[ILineKeywords.SCAN_NUMBER_END_KEYWORD.value] = scan_end
 
     @property
@@ -156,7 +156,7 @@ class Ms2Spectra:
         return float(prec_intensity) if prec_intensity else None
 
     @prec_intensity.setter
-    def prec_intensity(self, prec_intensity: Union[str, float]):
+    def prec_intensity(self, prec_intensity: Union[str, float]) -> None:
         self.info[ILineKeywords.PRECURSOR_INTENSITY_KEYWORD.value] = prec_intensity
 
     def serialize(
@@ -213,7 +213,7 @@ def _serialize_ms2_spectra(
 
 
 def _deserialize_ms2_spectra(
-    spectra_str: Union[str, List[str]], include_spectra=True
+    spectra_str: Union[str, List[str]], include_spectra: bool = True
 ) -> Ms2Spectra:
     if isinstance(spectra_str, str):
         lines = spectra_str.split("\n")
@@ -258,7 +258,7 @@ def _deserialize_ms2_spectra(
     )
 
 
-def ms2_spectra_consumer(queue: multiprocessing.Queue, return_dict: Dict):
+def ms2_spectra_consumer(queue: multiprocessing.Queue, return_dict: Dict[int, Ms2Spectra]) -> None:
     while True:
         try:
             tmp_spectra_lines = queue.get(timeout=1)
@@ -268,7 +268,7 @@ def ms2_spectra_consumer(queue: multiprocessing.Queue, return_dict: Dict):
         return_dict[ms2_spectra.low_scan] = ms2_spectra
 
 
-def get_header(ms2_input: Union[str, TextIOWrapper, StringIO]):
+def get_header(ms2_input: Union[str, TextIOWrapper, StringIO]) -> List[str]:
     """Extract only the header (H) lines from an MS2 input.
 
     Args:
@@ -295,7 +295,9 @@ def get_header(ms2_input: Union[str, TextIOWrapper, StringIO]):
     return header_lines
 
 
-def get_spectra(ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra=True):
+def get_spectra(
+    ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra: bool = True
+) -> Generator[Ms2Spectra, None, None]:
     """Lazily yield Ms2Spectra from an MS2 input (generator).
 
     Args:
@@ -332,7 +334,7 @@ def get_spectra(ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra=
 
 
 def from_ms2(
-    ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra=True
+    ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra: bool = True
 ) -> Tuple[List[str], List[Ms2Spectra]]:
     """Parse an MS2 file or string into header lines and spectra.
 

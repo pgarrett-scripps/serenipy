@@ -2,15 +2,20 @@
 
 from dataclasses import dataclass
 from io import StringIO, TextIOWrapper
-from typing import List, Tuple, Union
+from typing import Callable, List, Optional, Tuple, TypeVar, Union
+
+import pandas as pd
 
 from .utils import deserialize_val
 
+_T = TypeVar("_T")
+_U = TypeVar("_U")
 
-def apply_transformation(val, t):
-    if val is not None:
-        val = t(val)
-    return val
+
+def apply_transformation(val: Optional[_T], t: Callable[[_T], _U]) -> Optional[_U]:
+    if val is None:
+        return None
+    return t(val)
 
 
 @dataclass
@@ -139,7 +144,7 @@ def from_census(
     return header_lines, census_lines
 
 
-def to_df(census_input: Union[str, TextIOWrapper, StringIO]):
+def to_df(census_input: Union[str, TextIOWrapper, StringIO]) -> pd.DataFrame:
     """Parse a Census file directly into a pandas DataFrame.
 
     Args:
@@ -148,8 +153,6 @@ def to_df(census_input: Union[str, TextIOWrapper, StringIO]):
     Returns:
         A pandas DataFrame with the Census data.
     """
-    import pandas as pd
-
     if type(census_input) is str:
         lines = census_input.split("\n")
     elif type(census_input) is TextIOWrapper or type(census_input) is StringIO:

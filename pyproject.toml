@@ -60,7 +60,7 @@ target-version = "py310"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W"]
+select = ["E", "F", "I", "W", "ANN"]
 # Deferred to follow-up PRs:
 #   "B"  - flake8-bugbear (zip-strict, unused-loop-vars in legacy parsers)
 #   "UP" - pyupgrade (modernize type hints to PEP 604/585 across all files)
@@ -68,6 +68,9 @@ ignore = [
     "E721",  # type() == comparisons in census.py legacy code
     "F841",  # unused locals in dtaselectfilter.py parser
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN"]  # tests don't need full type annotations
 
 [tool.ty.src]
 root = "./src"
