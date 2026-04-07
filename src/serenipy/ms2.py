@@ -3,9 +3,9 @@
 import multiprocessing
 from dataclasses import dataclass
 from enum import Enum
-from io import TextIOWrapper, StringIO
+from io import StringIO, TextIOWrapper
 from queue import Empty
-from typing import Optional, Tuple, Union, List, Dict
+from typing import Dict, List, Optional, Tuple, Union
 
 s_line_template = "S\t{low_scan}\t{high_scan}\t{mz}\n"
 i_line_template = "I\t{keyword}\t{value}\n"
@@ -184,18 +184,14 @@ def _serialize_ms2_spectra(
         high_scan=ms2_spectra.high_scan,
         mz=ms2_spectra.mz,
     )
-    i_lines = [
-        i_line_template.format(keyword=k, value=v) for k, v in ms2_spectra.info.items()
-    ]
+    i_lines = [i_line_template.format(keyword=k, value=v) for k, v in ms2_spectra.info.items()]
     z_line = z_line_template.format(charge=ms2_spectra.charge, mass=ms2_spectra.mass)
 
     if ms2_spectra.charge_spectra:
         peak_lines = [
             peak_line_charged_template.format(
                 mz=m if mz_precision is None else round(m, mz_precision),
-                intensity=(
-                    i if intensity_precision is None else round(i, intensity_precision)
-                ),
+                intensity=(i if intensity_precision is None else round(i, intensity_precision)),
                 charge=int(c),
             )
             for m, i, c in zip(
@@ -208,9 +204,7 @@ def _serialize_ms2_spectra(
         peak_lines = [
             peak_line_template.format(
                 mz=m if mz_precision is None else round(m, mz_precision),
-                intensity=(
-                    i if intensity_precision is None else round(i, intensity_precision)
-                ),
+                intensity=(i if intensity_precision is None else round(i, intensity_precision)),
             )
             for m, i in zip(ms2_spectra.mz_spectra, ms2_spectra.intensity_spectra)
         ]
@@ -321,7 +315,6 @@ def get_spectra(ms2_input: Union[str, TextIOWrapper, StringIO], include_spectra=
     tmp_spectra_lines = []
 
     for line in lines:
-
         if line.startswith("H"):
             continue
 
@@ -362,16 +355,13 @@ def from_ms2(
     tmp_spectra_lines = []
 
     for line in lines:
-
         if line.startswith("H"):
             header_lines.append(line)
             continue
 
         elif line.startswith("S"):
             if tmp_spectra_lines:
-                spectra.append(
-                    _deserialize_ms2_spectra(tmp_spectra_lines, include_spectra)
-                )
+                spectra.append(_deserialize_ms2_spectra(tmp_spectra_lines, include_spectra))
                 tmp_spectra_lines = []
 
         if line:

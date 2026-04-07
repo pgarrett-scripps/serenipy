@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from io import StringIO, TextIOWrapper
-from typing import Tuple, Union, List
+from typing import List, Tuple, Union
 
 from .utils import deserialize_val
 
@@ -94,8 +94,7 @@ def _deserialize_census_line(line: str, census_columns: List[str]) -> CensusLine
     ]
     norm_intensity_strs = line_elems[i : i + len(experiment_lines)]
     norm_intensities = [
-        deserialize_val(norm_intensity_strs, float)
-        for norm_intensity_strs in norm_intensity_strs
+        deserialize_val(norm_intensity_strs, float) for norm_intensity_strs in norm_intensity_strs
     ]
 
     return CensusLine(
@@ -103,9 +102,7 @@ def _deserialize_census_line(line: str, census_columns: List[str]) -> CensusLine
         pvalue=deserialize_val(line_elems[i + len(experiment_lines)], float),
         qvalue=deserialize_val(line_elems[i + len(experiment_lines) + 1], float),
         protein=deserialize_val(line_elems[i + len(experiment_lines) + 2], str),
-        protein_description=deserialize_val(
-            line_elems[i + len(experiment_lines) + 3], str
-        ),
+        protein_description=deserialize_val(line_elems[i + len(experiment_lines) + 3], str),
         experiment_lines=experiment_lines,
     )
 
@@ -162,6 +159,4 @@ def to_df(census_input: Union[str, TextIOWrapper, StringIO]):
 
     filtered_census_lines = filter(lambda line: not line.startswith("H"), lines)
     census_string_io = StringIO("\n".join(filtered_census_lines))
-    return pd.read_csv(
-        census_string_io, sep="\t", index_col=False
-    )
+    return pd.read_csv(census_string_io, sep="\t", index_col=False)

@@ -1,14 +1,14 @@
 """Parser and serializer for DTASelect-filter output files."""
 
-from dataclasses import dataclass, asdict
+from collections import defaultdict
+from dataclasses import asdict, dataclass
 from enum import Enum, auto
 from io import StringIO, TextIOWrapper
-from typing import Tuple, Union, List
+from typing import List, Tuple, Union
 
 import pandas as pd
 
-from .utils import serialize_val, deserialize_val
-from collections import defaultdict
+from .utils import deserialize_val, serialize_val
 
 
 class DtaSelectFilterVersion(Enum):
@@ -218,9 +218,7 @@ def _serialize_peptide_line(line: PeptideLine, version: DtaSelectFilterVersion) 
         raise ValueError(f"Unsupported DtaSelectFilter Version: {version}!")
 
 
-def _deserialize_peptide_line(
-    line: str, version: DtaSelectFilterVersion
-) -> PeptideLine:
+def _deserialize_peptide_line(line: str, version: DtaSelectFilterVersion) -> PeptideLine:
     line_elems = line.rstrip().split("\t")
     if version == DtaSelectFilterVersion.V2_1_12:
         return PeptideLine(
@@ -354,9 +352,7 @@ def _deserialize_peptide_line(
             corrected_1k0=deserialize_val(line_elems[19], float),
             ion_mobility=deserialize_val(line_elems[20], float),
             ret_time=deserialize_val(line_elems[21], float),
-            ptm_index=(
-                None if len(line_elems) == 22 else deserialize_val(line_elems[22], str)
-            ),
+            ptm_index=(None if len(line_elems) == 22 else deserialize_val(line_elems[22], str)),
             ptm_index_protein_list=(
                 None if len(line_elems) == 22 else deserialize_val(line_elems[23], str)
             ),
@@ -410,10 +406,7 @@ protein_line_V2_1_13_timscore_template = (
 
 
 def _serialize_protein_line(line: ProteinLine, version: DtaSelectFilterVersion) -> str:
-    if (
-        version == DtaSelectFilterVersion.V2_1_12
-        or version == DtaSelectFilterVersion.V2_1_12_rt
-    ):
+    if version == DtaSelectFilterVersion.V2_1_12 or version == DtaSelectFilterVersion.V2_1_12_rt:
         return protein_line_V2_1_12_template.format(
             locus_name=serialize_val(line.locus_name),
             sequence_count=serialize_val(line.sequence_count),
@@ -479,21 +472,14 @@ def _serialize_protein_line(line: ProteinLine, version: DtaSelectFilterVersion) 
         raise ValueError(f"Unsupported DtaSelectFilter Version: {version}!")
 
 
-def _deserialize_protein_line(
-    line: str, version: DtaSelectFilterVersion
-) -> ProteinLine:
+def _deserialize_protein_line(line: str, version: DtaSelectFilterVersion) -> ProteinLine:
     line_elems = line.rstrip().split("\t")
-    if (
-        version == DtaSelectFilterVersion.V2_1_12
-        or version == DtaSelectFilterVersion.V2_1_12_rt
-    ):
+    if version == DtaSelectFilterVersion.V2_1_12 or version == DtaSelectFilterVersion.V2_1_12_rt:
         return ProteinLine(
             locus_name=deserialize_val(line_elems[0], str),
             sequence_count=deserialize_val(line_elems[1], int),
             spectrum_count=deserialize_val(line_elems[2], int),
-            sequence_coverage=deserialize_val(
-                line_elems[3], lambda x: float(x.rstrip("%"))
-            ),
+            sequence_coverage=deserialize_val(line_elems[3], lambda x: float(x.rstrip("%"))),
             length=deserialize_val(line_elems[4], int),
             molWt=deserialize_val(line_elems[5], float),
             pi=deserialize_val(line_elems[6], float),
@@ -510,9 +496,7 @@ def _deserialize_protein_line(
             locus_name=deserialize_val(line_elems[0], str),
             sequence_count=deserialize_val(line_elems[1], int),
             spectrum_count=deserialize_val(line_elems[2], int),
-            sequence_coverage=deserialize_val(
-                line_elems[3], lambda x: float(x.rstrip("%"))
-            ),
+            sequence_coverage=deserialize_val(line_elems[3], lambda x: float(x.rstrip("%"))),
             length=deserialize_val(line_elems[4], int),
             molWt=deserialize_val(line_elems[5], float),
             pi=deserialize_val(line_elems[6], float),
@@ -529,9 +513,7 @@ def _deserialize_protein_line(
             locus_name=deserialize_val(line_elems[0], str),
             sequence_count=deserialize_val(line_elems[1], int),
             spectrum_count=deserialize_val(line_elems[2], int),
-            sequence_coverage=deserialize_val(
-                line_elems[3], lambda x: float(x.rstrip("%"))
-            ),
+            sequence_coverage=deserialize_val(line_elems[3], lambda x: float(x.rstrip("%"))),
             length=deserialize_val(line_elems[4], int),
             molWt=deserialize_val(line_elems[5], float),
             pi=deserialize_val(line_elems[6], float),
@@ -548,9 +530,7 @@ def _deserialize_protein_line(
             locus_name=deserialize_val(line_elems[0], str),
             sequence_count=deserialize_val(line_elems[1], int),
             spectrum_count=deserialize_val(line_elems[2], int),
-            sequence_coverage=deserialize_val(
-                line_elems[3], lambda x: float(x.rstrip("%"))
-            ),
+            sequence_coverage=deserialize_val(line_elems[3], lambda x: float(x.rstrip("%"))),
             length=deserialize_val(line_elems[4], int),
             molWt=deserialize_val(line_elems[5], float),
             pi=deserialize_val(line_elems[6], float),
@@ -621,9 +601,7 @@ class DTAFilterResult:
         self.peptide_lines.sort(key=lambda x: (x.conf, x.x_corr), reverse=True)
         if level == 0:
             self.peptide_lines = [
-                peptide_line
-                for peptide_line in self.peptide_lines
-                if "(" in peptide_line.sequence
+                peptide_line for peptide_line in self.peptide_lines if "(" in peptide_line.sequence
             ]
         elif level == 1:
             self.peptide_lines = self.peptide_lines
@@ -666,9 +644,7 @@ class DTAFilterResult:
 
     def unique_peptide_filter(self):
         new_peptide_lines = [
-            peptide_line
-            for peptide_line in self.peptide_lines
-            if peptide_line.unique == "*"
+            peptide_line for peptide_line in self.peptide_lines if peptide_line.unique == "*"
         ]
         self.peptide_lines = new_peptide_lines
 
@@ -700,7 +676,6 @@ def results_to_df(results: List[DTAFilterResult]) -> pd.DataFrame:
 
         for protein_dict in protein_dicts:
             for peptide_dict in peptide_dicts:
-
                 for k in peptide_dict:
                     data[k].append(peptide_dict[k])
 
@@ -821,9 +796,7 @@ def determine_dta_select_filter_version(peptide_line_header) -> DtaSelectFilterV
     elif len(line_elems) == 16:
         return DtaSelectFilterVersion.V2_1_12_rt
     else:
-        raise ValueError(
-            f"Cannot parse version from peptide header: {peptide_line_header}!"
-        )
+        raise ValueError(f"Cannot parse version from peptide header: {peptide_line_header}!")
 
 
 def from_dta_select_filter(
@@ -871,9 +844,7 @@ def from_dta_select_filter(
 
         if len(line_elements) > 1 and line_elements[1] == "Proteins":
             dta_filter_results.append(
-                DTAFilterResult(
-                    protein_lines=protein_lines, peptide_lines=peptide_lines
-                )
+                DTAFilterResult(protein_lines=protein_lines, peptide_lines=peptide_lines)
             )
             file_state = FileState.INFO
 
@@ -881,18 +852,12 @@ def from_dta_select_filter(
             h_lines.append(line)
 
         if file_state == FileState.DATA:
-            if (
-                line_elements[0] == ""
-                or "*" in line_elements[0]
-                or line_elements[0].isnumeric()
-            ):
+            if line_elements[0] == "" or "*" in line_elements[0] or line_elements[0].isnumeric():
                 peptide_lines.append(_deserialize_peptide_line(line, version))
             else:
                 if protein_lines and peptide_lines:
                     dta_filter_results.append(
-                        DTAFilterResult(
-                            protein_lines=protein_lines, peptide_lines=peptide_lines
-                        )
+                        DTAFilterResult(protein_lines=protein_lines, peptide_lines=peptide_lines)
                     )
                     peptide_lines, protein_lines = [], []
                 protein_lines.append(_deserialize_protein_line(line, version))
@@ -976,11 +941,7 @@ def from_dta_select_filter_to_df(
             h_lines.append(line)
 
         if file_state == FileState.DATA:
-            if (
-                line_elements[0] == ""
-                or "*" in line_elements[0]
-                or line_elements[0].isnumeric()
-            ):
+            if line_elements[0] == "" or "*" in line_elements[0] or line_elements[0].isnumeric():
                 for key, value in zip(peptide_data, line_elements):
                     peptide_data[key].append(value)
                 peptide_data["protein_group"].append(current_protein_grp)

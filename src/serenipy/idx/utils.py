@@ -1,6 +1,6 @@
 import sqlite3
-from sqlite3 import Error
 import struct
+from sqlite3 import Error
 
 END_INT_VALUE = 2147483647
 BYTES_SIZE = 4

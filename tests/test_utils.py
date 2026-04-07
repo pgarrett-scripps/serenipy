@@ -1,10 +1,9 @@
 import unittest
 
-from serenipy.utils import serialize_val, deserialize_val
+from serenipy.utils import deserialize_val, serialize_val
 
 
 class TestUtils(unittest.TestCase):
-
     def test_serialize_val_none(self):
         self.assertEqual(serialize_val(None), "NA")
 
