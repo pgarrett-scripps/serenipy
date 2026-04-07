@@ -1,9 +1,9 @@
 """Shared serialization utilities for converting values to/from string representations."""
 
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 
-def serialize_val(val: Any, precision=None) -> str:
+def serialize_val(val: Any, precision: Optional[int] = None) -> str:  # noqa: ANN401
     """Convert a value to its string representation for file serialization.
 
     Args:
@@ -20,7 +20,7 @@ def serialize_val(val: Any, precision=None) -> str:
     return str(round(val, precision))
 
 
-def deserialize_val(val: str, f: Callable) -> Any:
+def deserialize_val(val: str, f: Callable) -> Any:  # noqa: ANN401
     """Parse a string value using the provided callable, treating "NA" as None.
 
     Args:

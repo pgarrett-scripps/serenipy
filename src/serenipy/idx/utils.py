@@ -1,6 +1,8 @@
 import sqlite3
 import struct
+from pathlib import Path
 from sqlite3 import Error
+from typing import Optional, Union
 
 END_INT_VALUE = 2147483647
 BYTES_SIZE = 4
@@ -34,7 +36,7 @@ def convert_int_to_bytes(element: int) -> bytes:
     return struct.pack("<i", element)
 
 
-def create_connection(path):
+def create_connection(path: Union[str, Path]) -> Optional[sqlite3.Connection]:
     connection = None
     try:
         connection = sqlite3.connect(path)

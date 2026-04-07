@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass
 from enum import Enum, auto
 from io import StringIO, TextIOWrapper
-from typing import List, Tuple, Union
+from typing import Iterable, List, Tuple, Union
 
 import pandas as pd
 
@@ -553,7 +553,7 @@ class DTAFilterResult:
     protein_lines: List[ProteinLine]
     peptide_lines: List[PeptideLine]
 
-    def serialize(self, version):
+    def serialize(self, version: DtaSelectFilterVersion) -> str:
         protein_line_strings = [
             _serialize_protein_line(line, version) for line in self.protein_lines
         ]
@@ -642,7 +642,7 @@ class DTAFilterResult:
         if not contains_fdr_peptide:
             self.peptide_lines = []
 
-    def unique_peptide_filter(self):
+    def unique_peptide_filter(self) -> None:
         new_peptide_lines = [
             peptide_line for peptide_line in self.peptide_lines if peptide_line.unique == "*"
         ]
@@ -761,14 +761,14 @@ def results_from_df(df: pd.DataFrame) -> List[DTAFilterResult]:
     return results
 
 
-def results_to_protein_df(protein_lines: List[ProteinLine]):
+def results_to_protein_df(protein_lines: List[ProteinLine]) -> pd.DataFrame:
     data = []
     for protein_line in protein_lines:
         data.append(asdict(protein_line))
     return pd.DataFrame(data)
 
 
-def results_to_peptide_df(peptide_lines: List[PeptideLine]):
+def results_to_peptide_df(peptide_lines: List[PeptideLine]) -> pd.DataFrame:
     data = []
     for peptide_line in peptide_lines:
         d = asdict(peptide_line)
@@ -781,7 +781,7 @@ def results_to_peptide_df(peptide_lines: List[PeptideLine]):
     return pd.DataFrame(data)
 
 
-def determine_dta_select_filter_version(peptide_line_header) -> DtaSelectFilterVersion:
+def determine_dta_select_filter_version(peptide_line_header: str) -> DtaSelectFilterVersion:
     line_elems = peptide_line_header.rstrip().split("\t")
     if len(line_elems) == 24:
         return DtaSelectFilterVersion.V2_1_13_timscore
@@ -868,7 +868,7 @@ def from_dta_select_filter(
     return version, h_lines, dta_filter_results, end_lines
 
 
-def convert_to_best_datatype(values):
+def convert_to_best_datatype(values: Iterable[str]) -> List[Union[float, int, str]]:
     for datatype in (float, int, str):
         try:
             converted_values = [datatype(value) for value in values]

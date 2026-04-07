@@ -9,7 +9,7 @@ def get_file_from_search(search: Path, file_type: Ip2FileType) -> Path:
         return files[0]
 
 
-def remove_dta_files_from_search(search: Path):
+def remove_dta_files_from_search(search: Path) -> None:
     files = list(search.glob("DTASelect-*"))
     for file in files:
         file.unlink()
